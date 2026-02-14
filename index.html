@@ -338,6 +338,33 @@
 
 <body>
 
+    <!-- Terms Modal -->
+    <div id="termsModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10000; justify-content:center; align-items:center; flex-direction:column; padding:20px; box-sizing:border-box;">
+        <div
+            style="background:#222; padding:30px; border:1px solid var(--accent-red); border-radius:8px; max-width:600px; width:100%; text-align:center; box-shadow: 0 0 20px rgba(138, 0, 0, 0.5);">
+            <h2 data-i18n="termsTitle"
+                style="color:var(--accent-red); margin-top:0; font-size:1.5rem; border-bottom:1px solid #444; padding-bottom:10px; margin-bottom:20px;">
+                Terms of Use</h2>
+
+            <div style="color:#e0e0e0; font-size:1rem; line-height:1.6; margin-bottom:30px; text-align:left;">
+                <p data-i18n="termsText1">Please use this tool at your own risk.</p>
+                <p data-i18n="termsText2">The creator assumes no responsibility for any losses or damages caused by
+                    using
+                    this tool or by any calculation errors.</p>
+                <p data-i18n="termsText3" style="color:var(--accent-gold); font-weight:bold; margin-top:10px;">Do you
+                    agree to these terms?</p>
+            </div>
+
+            <button onclick="agreeTerms()"
+                style="padding:10px 30px; font-size:1.1rem; background:var(--accent-red); color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold; transition:all 0.2s;"
+                onmouseover="this.style.background='var(--accent-red-light)'"
+                onmouseout="this.style.background='var(--accent-red)'">
+                <span data-i18n="btnAgree">Agree and Enter</span>
+            </button>
+        </div>
+    </div>
+
     <div class="container">
         <!-- New Header Layout: Title Left, Controls Right -->
         <div
@@ -398,7 +425,7 @@
         <!-- Save/Load Controls -->
         <div class="panel">
             <span class="panel-title" data-i18n="saveLoadTitle">Memory Spell (Save/Load)</span>
-            <div class="save-load-area">
+            <div class="save-load-area" style="flex-wrap: wrap;">
                 <div class="slot-control">
                     <p data-i18n="slot1">Slot 1</p>
                     <button onclick="saveData(1)" data-i18n="btnSave">Save</button>
@@ -413,6 +440,13 @@
                     <p data-i18n="slot3">Slot 3</p>
                     <button onclick="saveData(3)" data-i18n="btnSave">Save</button>
                     <button onclick="loadData(3)" data-i18n="btnLoad">Load</button>
+                </div>
+                <!-- Export/Import -->
+                <div class="slot-control" style="border-left: 1px solid #444; padding-left: 10px;">
+                    <p data-i18n="lblFile">File</p>
+                    <button onclick="exportData()" data-i18n="btnExport">Export</button>
+                    <button onclick="document.getElementById('fileInput').click()" data-i18n="btnImport">Import</button>
+                    <input type="file" id="fileInput" style="display:none" onchange="importData(this)" accept=".json">
                 </div>
             </div>
             <p id="save-message"
@@ -991,6 +1025,12 @@
                 slot3: "Slot 3",
                 btnSave: "Save",
                 btnLoad: "Load",
+                btnExport: "Export",
+                btnImport: "Import",
+                lblFile: "File",
+                msgExported: "Data exported to file",
+                msgImported: "Data imported successfully",
+                errImport: "Failed to import data",
                 charStatusTitle: "Character Status",
                 lblLevel: "Current Level (260-299)",
                 lblCurrentExp: "Current EXP (%)",
@@ -1120,7 +1160,12 @@
                     <p>The "Optimized Route Simulation" calculates the theoretical best path level-by-level based on your inputs.</p>
                     <h3 style="color:var(--accent-red);">Note</h3>
                     <p>Treasure Box & VIP Booster are currently in development.</p>
-                `
+                `,
+                termsTitle: "Terms of Use",
+                termsText1: "Please use this tool at your own risk.",
+                termsText2: "The creator assumes no responsibility for any losses or damages caused by using this tool or by any calculation errors.",
+                termsText3: "Do you agree to these terms?",
+                btnAgree: "Agree and Enter"
             },
             ja: {
                 appTitle: "シャスタの育成計画表 Ver0.82",
@@ -1130,6 +1175,12 @@
                 slot3: "記録 3",
                 btnSave: "保存",
                 btnLoad: "読込",
+                btnExport: "出力",
+                btnImport: "取込",
+                lblFile: "ファイル",
+                msgExported: "データをファイルに出力しました",
+                msgImported: "データの取り込みに成功しました",
+                errImport: "データの取り込みに失敗しました",
                 charStatusTitle: "ステータス",
                 lblLevel: "現在のレベル (260-299)",
                 lblCurrentExp: "現在の経験値 (%)",
@@ -1254,10 +1305,15 @@
                         <h3>5. 結果確認</h3>
                         <p>1日の合計獲得経験値と、目標レベル到達までの推定日数が表示されます。</p>
                         <h3>6. シミュレーション</h3>
-                        <p>「最適化ルートシミュレーション」は、設定された条件（バフ、討伐効率など）を元に、レベルごとの最適な狩場とクエストの組み合わせを自動計算します。</p>
+                        <p>「最適化ルートシミュレーション」は、設定された条件（バフ、討伐効率など）を元に、レベルごとの最適な狩場とクエスト(モンスターパークは回数考慮・討伐クエストはすべて実施)の組み合わせを自動計算します。</p>
                         <h3 style="color:var(--accent-red);">注意</h3>
                         <p>トレジャーボックスおよびVIPブースターは現在開発中です。</p>
-                `
+                `,
+                termsTitle: "ご利用にあたって",
+                termsText1: "本ツールのご利用は自己責任でお願いします。",
+                termsText2: "計算ミスや不具合による損失等について、製作者は一切の責任を負いません。",
+                termsText3: "上記に同意した場合のみご利用ください。",
+                btnAgree: "同意して利用する"
             }
         };
 
@@ -1546,6 +1602,7 @@
                 el.addEventListener("change", calculateAll);
             });
             calculateAll();
+            checkTerms();
         }
 
         function updateMapSelectors() {
@@ -2044,6 +2101,18 @@
             }
         }
 
+        // --- Terms Modal ---
+        function checkTerms() {
+            if (!localStorage.getItem("shasta_planner_terms_agreed")) {
+                document.getElementById("termsModal").style.display = "flex";
+            }
+        }
+
+        function agreeTerms() {
+            localStorage.setItem("shasta_planner_terms_agreed", "true");
+            document.getElementById("termsModal").style.display = "none";
+        }
+
         // --- Bulk Actions & Epic Logic ---
         function bulkCheckDaily(mode) {
             const currentLv = parseInt(document.getElementById("currentLevel").value) || 260;
@@ -2371,7 +2440,13 @@
                 alert("No data in Slot " + slot);
                 return;
             }
-            const data = JSON.parse(json);
+            applyData(JSON.parse(json));
+            const msg = document.getElementById("save-message");
+            msg.textContent = getText('msgLoaded').replace('{slot}', slot);
+            setTimeout(() => msg.textContent = "", 3000);
+        }
+
+        function applyData(data) {
             for (const [id, val] of Object.entries(data)) {
                 const el = document.getElementById(id);
                 if (el) {
@@ -2380,12 +2455,58 @@
                 }
             }
             updateRequiredExp();
-            document.getElementById('burningMain').oninput();
-            document.getElementById('burningRival').oninput();
+            // Trigger sliders updates
+            const bMain = document.getElementById('burningMain');
+            const bRival = document.getElementById('burningRival');
+            if (bMain) bMain.oninput();
+            if (bRival) bRival.oninput();
+
             calculateAll();
+        }
+
+        function exportData() {
+            const data = {};
+            document.querySelectorAll("input, select").forEach(el => {
+                // Skip file input
+                if (el.type === 'file') return;
+                if (el.type === 'checkbox') data[el.id] = el.checked;
+                else data[el.id] = el.value;
+            });
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `shasta_planner_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
             const msg = document.getElementById("save-message");
-            msg.textContent = getText('msgLoaded').replace('{slot}', slot);
+            msg.textContent = getText('msgExported');
             setTimeout(() => msg.textContent = "", 3000);
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    applyData(data);
+                    const msg = document.getElementById("save-message");
+                    msg.textContent = getText('msgImported');
+                    setTimeout(() => msg.textContent = "", 3000);
+                } catch (err) {
+                    alert(getText('errImport'));
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            input.value = ""; // Reset input so same file can be selected again
         }
 
         window.onload = init;
