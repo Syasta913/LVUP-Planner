@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shasta's MapleStory Planner (JMS Edition)</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1d;
+            --panel-bg: #2d2d30;
+            --text-main: #e0e0e0;
+            --accent-red: #8a0000;
+            --accent-red-light: #c53030;
+            --accent-gold: #c5a059;
+            --accent-silver: #a0a0a0;
+            --input-bg: #121212;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            background-image: radial-gradient(circle at 50% 50%, #2a2a2e 0%, #1a1a1d 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: var(--accent-gold);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            font-weight: normal;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid var(--accent-red);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        /* Language Toggle */
+        .lang-switch {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--panel-bg);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: serif;
+        }
+
+        .lang-switch:hover {
+            background: var(--accent-gold);
+            color: #000;
+        }
+
+        /* Common Panel Style */
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--accent-silver);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            border: 1px dashed #444;
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        .panel-title {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background-color: var(--panel-bg);
+            padding: 0 8px;
+            color: var(--accent-red-light);
+            font-size: 1rem;
+            font-weight: bold;
+            border: 1px solid var(--accent-silver);
+            border-radius: 4px;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+                margin-top: 40px;
+            }
+        }
+
+        /* Inputs */
+        label {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 0.85rem;
+            color: var(--accent-silver);
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 6px;
+            background-color: var(--input-bg);
+            border: 1px solid #555;
+            color: var(--text-main);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: sans-serif;
+            transition: border-color 0.3s;
+            font-size: 0.9rem;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        /* Helper text for formatted numbers */
+        .helper-text {
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+            text-align: right;
+            margin-top: 2px;
+            font-family: monospace;
+        }
+
+        /* Result Display */
+        .result-box {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+
+        .result-value {
+            font-size: 1.3rem;
+            color: var(--accent-gold);
+            font-weight: bold;
+        }
+
+        .result-date {
+            font-size: 1.5rem;
+            color: var(--accent-red-light);
+            margin-top: 5px;
+            text-shadow: 0 0 10px rgba(197, 48, 48, 0.5);
+        }
+
+        .diff-win {
+            color: #4ade80;
+        }
+
+        /* Green */
+        .diff-lose {
+            color: #f87171;
+        }
+
+        /* Red */
+
+        /* Buttons */
+        .save-load-area {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+            align-items: center;
+        }
+
+        .slot-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .slot-control p {
+            margin: 0;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        button {
+            padding: 5px 15px;
+            cursor: pointer;
+            background: linear-gradient(to bottom, #444, #222);
+            color: var(--accent-silver);
+            border: 1px solid var(--accent-silver);
+            border-radius: 4px;
+            font-family: serif;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        button:hover {
+            background: linear-gradient(to bottom, var(--accent-red), #400);
+            color: white;
+            border-color: var(--accent-gold);
+        }
+
+        .burning-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to right, #333, #8a0000);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .burning-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        /* Buff Grouping Styling */
+        .buff-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .buff-group {
+            border: 1px solid #444;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 8px;
+            border-radius: 6px;
+            flex: 1 1 auto;
+            min-width: 180px;
+        }
+
+        .buff-group-title {
+            font-size: 0.75rem;
+            color: var(--accent-gold);
+            margin-bottom: 3px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 1px;
+            display: block;
+            width: 100%;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .checkbox-item {
+            background: #222;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .checkbox-item:hover {
+            border-color: #666;
+        }
+
+        .checkbox-item input {
+            width: auto;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+
+        .checkbox-item:has(input:checked) {
+            border-color: var(--accent-red);
+            background: rgba(138, 0, 0, 0.1);
+        }
+
+        .note {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .level-bonus-text {
+            color: var(--accent-gold);
+            font-size: 0.85rem;
+            margin-top: 4px;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- New Header Layout: Title Left, Controls Right -->
+        <div
+            style="display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; width: 100%; gap: 10px;">
+
+            <!-- タイトル：単独で中央配置 -->
+            <h1 data-i18n="appTitle"
+                style="margin: 0; font-size: 2rem; line-height: 1.2; text-align: center; width: 100%;">
+                Shasta's Experience Planner Ver0.82
+            </h1>
+
+            <!-- ボタン群：タイトルの下で横一列に並べる（重なりを強制解除） -->
+            <div
+                style="display: flex !important; flex-direction: row !important; gap: 15px !important; justify-content: center !important; align-items: center !important; flex-wrap: wrap !important; width: 100%;">
+
+                <button class="lang-switch" onclick="toggleLanguage()" id="btnLang"
+                    style="position: static !important; margin: 0 !important; white-space: nowrap !important;">
+                    English / 日本語
+                </button>
+
+                <button class="lang-switch" onclick="toggleManual()" id="btnManual" data-i18n="btnManual"
+                    style="position: static !important; margin: 0 !important; white-space: nowrap !important;">
+                    Manual
+                </button>
+
+                <label
+                    style="position: static !important; display: flex !important; align-items: center !important; gap: 5px !important; margin: 0 !important; font-size: 0.8rem; color: #aaa; white-space: nowrap !important;">
+                    <input type="checkbox" id="chkShowNotImpl" onchange="updateRequiredExp()"
+                        style="margin: 0 !important;">
+                    <span data-i18n="lblNotImpl">Show Not Implemented</span>
+                </label>
+
+                <!-- Boss Schedule Link -->
+                <a href="https://syasta913.github.io/maplestory-tracker/" target="_blank" style="text-decoration:none;">
+                    <button class="lang-switch" data-i18n="btnBossTracker"
+                        style="position: static !important; margin: 0 !important; white-space: nowrap !important; background:var(--accent-gold); color:black; font-weight:bold;">
+                        Boss Schedule
+                    </button>
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Manual Modal -->
+        <div id="manualModal"
+            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+            <div
+                style="background:#222; padding:20px; border:1px solid var(--accent-gold); border-radius:8px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto; position:relative;">
+                <button onclick="toggleManual()"
+                    style="position:absolute; top:10px; right:10px; background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+                <h2 data-i18n="manualTitle" style="color:var(--accent-gold); margin-top:0;">Instruction Manual</h2>
+                <div id="manualContent" style="color:#ddd; font-size:0.9rem; line-height:1.6;">
+                    <!-- Content populated by JS based on language -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Save/Load Controls -->
+        <div class="panel">
+            <span class="panel-title" data-i18n="saveLoadTitle">Memory Spell (Save/Load)</span>
+            <div class="save-load-area">
+                <div class="slot-control">
+                    <p data-i18n="slot1">Slot 1</p>
+                    <button onclick="saveData(1)" data-i18n="btnSave">Save</button>
+                    <button onclick="loadData(1)" data-i18n="btnLoad">Load</button>
+                </div>
+                <div class="slot-control" style="border-left: 1px solid #444; padding-left: 10px;">
+                    <p data-i18n="slot2">Slot 2</p>
+                    <button onclick="saveData(2)" data-i18n="btnSave">Save</button>
+                    <button onclick="loadData(2)" data-i18n="btnLoad">Load</button>
+                </div>
+                <div class="slot-control" style="border-left: 1px solid #444; padding-left: 10px;">
+                    <p data-i18n="slot3">Slot 3</p>
+                    <button onclick="saveData(3)" data-i18n="btnSave">Save</button>
+                    <button onclick="loadData(3)" data-i18n="btnLoad">Load</button>
+                </div>
+            </div>
+            <p id="save-message"
+                style="text-align:center; color: var(--accent-gold); height: 1rem; margin: 2px 0 0 0; font-size: 0.8rem;">
+            </p>
+        </div>
+
+
+        <!-- (Status was here, moved down) -->
+
+        <!-- Status & Buffs (Reordered: Buffs 1st, Status 2nd, Quests 3rd) -->
+        <!-- 1. Buffs (Originally 2nd) -->
+        <div class="panel">
+            <span class="panel-title" data-i18n="buffsTitle">Buffs & Multipliers</span>
+
+            <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <label data-i18n="lblTotalBuff">Total Bonus EXP %</label>
+                    <input type="number" id="userBuffPercent" value="0" placeholder="Example: 300">
+                </div>
+                <div style="flex: 1;">
+                    <label data-i18n="lblOtherMult">Other Multipliers</label>
+                    <!-- Replaced Rune with Treasure Box (Placeholder) -->
+                    <!-- Replaced Rune with Treasure Box -->
+                    <div style="display:flex; align-items:center; height:32px; gap:10px;">
+                        <label class="checkbox-item" style="margin-bottom:0;">
+                            <input type="checkbox" id="buffTreasureBox" onchange="calculateAll()">
+                            <span data-i18n="lblTreasureBox">Treasure Box</span>
+                        </label>
+                        <input type="number" id="treasureBoxVal" value="1.0" step="0.1" min="1.0"
+                            style="width:60px; padding:2px; height:24px;" onchange="calculateAll()">
+
+                        <!-- VIP Booster Checkbox (UI Only) -->
+                        <div style="width:1px; height:20px; background:#444; margin:0 5px;"></div>
+                        <label class="checkbox-item" style="margin-bottom:0;">
+                            <input type="checkbox" id="buffVIPBooster" onchange="calculateAll()">
+                            <span data-i18n="lblVIPBooster">VIP Booster</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="buff-container">
+                <!-- Coupons -->
+                <div class="buff-group">
+                    <span class="buff-group-title" data-i18n="grpCoupons">Coupons</span>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="buffCoupon100"
+                                onchange="toggleExclusiveBuff('Coupon', 100, this)"> <span
+                                data-i18n="buff2x">2x</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffCoupon200"
+                                onchange="toggleExclusiveBuff('Coupon', 200, this)"> <span
+                                data-i18n="buff3x">3x</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffCoupon300"
+                                onchange="toggleExclusiveBuff('Coupon', 300, this)"> <span
+                                data-i18n="buff4x">4x</span></label>
+                    </div>
+                </div>
+
+                <!-- MVP -->
+                <div class="buff-group">
+                    <span class="buff-group-title" data-i18n="grpMVP">MVP</span>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="buffMVP50"
+                                onchange="toggleExclusiveBuff('MVP', 50, this)"> 50%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffMVP75"
+                                onchange="toggleExclusiveBuff('MVP', 75, this)"> 75%</label>
+                    </div>
+                </div>
+
+                <!-- Potions & Special -->
+                <div class="buff-group">
+                    <span class="buff-group-title" data-i18n="grpPotion">Potions / Special</span>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="buffPotion10"
+                                onchange="toggleExclusiveBuff('Potion', 10, this)"> <span
+                                data-i18n="buffPot10">EXP(10%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffPotion20"
+                                onchange="toggleExclusiveBuff('Potion', 20, this)"> <span
+                                data-i18n="buffPot20">Wealth(20%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEXGold"
+                                onchange="toggleBuff(10, this)"> EX
+                            Gold</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffLounge"
+                                onchange="toggleBuff(25, this)" style="border-color:#c5a059"> <span
+                                data-i18n="buffLounge">Lounge(25%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffVIP" onchange="toggleBuff(15, this)"
+                                style="border-color:#c5a059"> <span data-i18n="buffVIP">VIP(15%)</span></label>
+                    </div>
+                </div>
+
+                <!-- Event Stats (New) -->
+                <div class="buff-group">
+                    <span class="buff-group-title" data-i18n="grpEvent">Event Stats</span>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent2_5"
+                                onchange="toggleExclusiveBuff('Event', 2.5, this)"> 2.5%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent5"
+                                onchange="toggleExclusiveBuff('Event', 5, this)"> 5%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent7_5"
+                                onchange="toggleExclusiveBuff('Event', 7.5, this)"> 7.5%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent10"
+                                onchange="toggleExclusiveBuff('Event', 10, this)"> 10%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent12_5"
+                                onchange="toggleExclusiveBuff('Event', 12.5, this)"> 12.5%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent15"
+                                onchange="toggleExclusiveBuff('Event', 15, this)"> 15%</label>
+                    </div>
+                </div>
+
+                <!-- Skills (Was Holy Symbol) -->
+                <div class="buff-group">
+                    <span class="buff-group-title" data-i18n="grpSkill">Skill</span>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="buffHS50"
+                                onchange="toggleExclusiveBuff('Symbol', 50, this)"> <span
+                                data-i18n="buffHS50">HS(50%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffHS35"
+                                onchange="toggleExclusiveBuff('Symbol', 35, this)"> <span
+                                data-i18n="buffHS35">DHS(35%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffDice6"
+                                onchange="toggleBuff(30, this)"> <span data-i18n="buffDice6">Dice6(30%)</span></label>
+                    </div>
+                </div>
+
+                <!-- Stats / Legion / Hyper -->
+                <div class="buff-group">
+                    <span class="buff-group-title" data-i18n="grpStats">Legion / Hyper</span>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="buffLegion10"
+                                onchange="toggleBuff(10, this)"> <span
+                                data-i18n="buffLegion10">Occupy(10%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffArtifact12"
+                                onchange="toggleBuff(12, this)"> <span
+                                data-i18n="buffArtifact12">Artifact(12%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffHyper10"
+                                onchange="toggleBuff(10, this)"> <span data-i18n="buffHyper10">Hyper(10%)</span></label>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div class="buff-group">
+                    <span class="buff-group-title" data-i18n="grpTitle">Title</span>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="buffTitle10"
+                                onchange="toggleExclusiveBuff('Title', 10, this)"> 10%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffTitle20"
+                                onchange="toggleExclusiveBuff('Title', 20, this)"> 20%</label>
+                    </div>
+                </div>
+
+                <!-- Sol Janus -->
+                <div class="buff-group">
+                    <span class="buff-group-title" data-i18n="grpJanus">Sol Janus</span>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="buffJanus10"
+                                onchange="toggleExclusiveBuff('Janus', 10, this)"> Lv1</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffJanus37"
+                                onchange="toggleExclusiveBuff('Janus', 37, this)"> Lv10</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffJanus46"
+                                onchange="toggleExclusiveBuff('Janus', 46, this)"> Lv15</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffJanus67"
+                                onchange="toggleExclusiveBuff('Janus', 67, this)"> Lv20</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffJanus100"
+                                onchange="toggleExclusiveBuff('Janus', 100, this)"> Lv30</label>
+                    </div>
+                </div>
+
+                <!-- Link Skills -->
+                <div class="buff-group">
+                    <span class="buff-group-title" data-i18n="grpLinks">Link Skills</span>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="buffMerc15"
+                                onchange="toggleExclusiveBuff('Merc', 15, this)"> <span
+                                data-i18n="buffMerc15">Merc15</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffMerc20"
+                                onchange="toggleExclusiveBuff('Merc', 20, this)"> <span
+                                data-i18n="buffMerc20">Merc20</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffZero10"
+                                onchange="toggleExclusiveBuff('Zero', 10, this)"> <span
+                                data-i18n="buffZero10">Zero10</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffZero12"
+                                onchange="toggleExclusiveBuff('Zero', 12, this)"> <span
+                                data-i18n="buffZero12">Zero12</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvan30"
+                                onchange="toggleExclusiveBuff('Evan', 30, this)"> <span
+                                data-i18n="buffEvan30">Evan30</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvan34"
+                                onchange="toggleExclusiveBuff('Evan', 34, this)"> <span
+                                data-i18n="buffEvan34">Evan34</span></label>
+                    </div>
+                </div>
+
+                <!-- Equip -->
+                <div class="buff-group">
+                    <span class="buff-group-title" data-i18n="grpEquip">Equip</span>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="buffSpirit30"
+                                onchange="toggleBuff(30, this)"> <span data-i18n="buffSpirit30">Pend(30%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffRingBlue"
+                                onchange="toggleBuff(15, this)" style="border-color:#3b82f6;"> <span
+                                data-i18n="buffRingBlue">Blue(15%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffRingBlack"
+                                onchange="toggleBuff(15, this)" style="border-color:#111;"> <span
+                                data-i18n="buffRingBlack">Black(15%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffRing3"
+                                onchange="toggleBuff(3, this)"> <span data-i18n="buffRing3">Ring(3%)</span></label>
+                    </div>
+                </div>
+
+                <div style="width:100%; margin-top:5px;">
+                    <button onclick="checkHighEfficacyBuffs()" style="width:100%;" data-i18n="btnMaxBuffs">Check
+                        High Efficacy Buffs</button>
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <!-- 2. Character Status (Restored) -->
+        <div class="panel">
+            <span class="panel-title" data-i18n="charStatusTitle">Status</span>
+
+            <div class="status-grid">
+                <div class="input-group">
+                    <label data-i18n="lblLevel">Current Level (260-299)</label>
+                    <input type="number" id="currentLevel" value="260" min="260" max="299"
+                        onchange="updateRequiredExp()">
+                </div>
+                <!-- Target Level -->
+                <div class="input-group">
+                    <label data-i18n="lblTargetLevel">Target Level</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="number" id="targetLevel" placeholder="e.g. 285" min="260" max="300"
+                            style="border-color: var(--accent-gold); flex:1;">
+                        <button onclick="runSimulation()" data-i18n="btnCalc"
+                            style="padding:2px 8px; font-weight:bold;">Calc</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label data-i18n="lblCurrentExp">Current EXP (%)</label>
+                    <input type="number" id="currentExpPercent" value="0.00" step="0.001" min="0" max="99.999">
+                </div>
+                <div class="input-group">
+                    <label data-i18n="lblReqExp">Required EXP to Next Level</label>
+                    <input type="text" id="requiredExpDisplay" readonly style="background:#222; color:#888;">
+                    <input type="hidden" id="requiredExpRaw">
+                </div>
+                <div class="input-group">
+                    <label data-i18n="lblDailyTime">Daily Hunting Time</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="number" id="dailyHours" value="2" min="0" max="24" placeholder="H">
+                        <input type="number" id="dailyMinutes" value="0" min="0" max="59" placeholder="M">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Daily & Weekly Quests -->
+        <div class="panel">
+            <span class="panel-title" data-i18n="questTitle">Daily & Weekly Quests</span>
+            <div class="grid-2">
+                <!-- Daily Quests -->
+                <div>
+                    <h3 data-i18n="questDailyTitle" style="margin-top:0; font-size:1rem; border-bottom:1px solid #444;">
+                        Daily Quests</h3>
+
+                    <!-- Monster Park (Daily) -->
+                    <div style="margin-bottom:10px; padding:5px; background:#222; border-radius:4px;">
+                        <label style="display:block; font-size:0.9rem; font-weight:bold; margin-bottom:3px;"
+                            data-i18n="lblMonsterPark">Monster Park (Daily)</label>
+
+
+
+                        <div style="display:flex; gap:10px; align-items: flex-end; flex-wrap: wrap;">
+                            <select id="mpDailySelect" style="width: 40%; flex: none; min-width: 150px; padding:2.2px;"
+                                onchange="calculateAll()">
+                                <option value="-1" data-i18n="optNone">None</option>
+                                <!-- Populated JS -->
+                            </select>
+                            <!-- Count -->
+                            <div style="text-align:center;">
+                                <div style="font-size:0.7rem; color:#aaa; margin-bottom:2px;" data-i18n="lblRuns">
+                                    Count
+                                </div>
+                                <input type="number" id="mpDailyCount" value="1" min="1" max="7"
+                                    style="width: 40px; padding:2.2px;" onchange="calculateAll()" placeholder="Runs">
+                            </div>
+
+                            <!-- Multiplier -->
+                            <div style="text-align:center;">
+                                <div style="font-size:0.7rem; color:#aaa; margin-bottom:2px;" data-i18n="lblMult">
+                                    Multiplier</div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="font-size:1rem; color:#888;">x</span>
+                                    <input type="number" id="mpDailyMult" value="1" placeholder="1.0" step="0.05"
+                                        style="width:60px; padding:2.5px;" onchange="calculateAll()">
+                                </div>
+                            </div>
+                            <!-- Sunday Check (Moved Out of Stack) -->
+                            <label class="checkbox-item" style="font-size:0.7rem;">
+                                <input type="checkbox" id="mpDailySunday" onchange="calculateAll()">
+                                <span style="white-space:nowrap;">Sun(+50%)</span>
+                            </label>
+                        </div>
+
+
+
+                        <!-- Kill Quests Frame -->
+                        <fieldset style="border: 1px solid #444; padding: 5px; margin-top:5px; border-radius:4px;">
+                            <legend style="font-size:0.75rem; color:#aaa;" data-i18n="legendKill">Kill Quests
+                            </legend>
+                            <div style="margin-bottom:5px;">
+                                <button onclick="bulkCheckDaily('under260')" style="font-size:0.7rem; padding:2px 5px;"
+                                    data-i18n="btnCheckUnder260">&lt; 260</button>
+                                <button onclick="bulkCheckDaily('over260')" style="font-size:0.7rem; padding:2px 5px;"
+                                    data-i18n="btnCheckOver260">&ge; 260</button>
+                                <button onclick="bulkCheckDaily('clear')" style="font-size:0.7rem; padding:2px 5px;"
+                                    data-i18n="btnClear">Clear</button>
+                            </div>
+                            <div class="checkbox-group" id="dailyQuestList">
+                                <!-- Populated by JS -->
+                            </div>
+                        </fieldset>
+                        <p style="text-align:right; color:var(--accent-gold); margin:5px 0 0 0;">
+                            <span data-i18n="dailyToTotal">Daily Total:</span> <span id="dailyQuestTotal">0</span>
+                            EXP
+                        </p>
+                    </div>
+                </div> <!-- Closing Daily Quests Div -->
+
+                <!-- Weekly Quests -->
+                <div>
+                    <h3 data-i18n="questWeeklyTitle"
+                        style="margin-top:0; font-size:1rem; border-bottom:1px solid #444;">
+                        Weekly Quests</h3>
+
+                    <!-- EX Monster Park (Weekly) -->
+                    <div style="margin-bottom:5px; padding-bottom:5px; border-bottom:1px dashed #444;">
+                        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:5px;">
+                            <label class="checkbox-item" style="font-weight:bold; flex-grow: 1;">
+                                <input type="checkbox" id="weeklyDiffMP" onchange="calculateAll()">
+                                <span data-i18n="lblExMonsterPark">Extreme Monster Park</span>
+                            </label>
+
+                            <!-- Multiplier -->
+                            <div style="display:flex; align-items:center; gap:2px;">
+                                <span style="font-size:0.8rem; color:#888;">x</span>
+                                <input type="number" id="mpExtremeMult" value="1" placeholder="1.0" step="0.05"
+                                    style="width:50px; padding:2px;" onchange="calculateAll()">
+                            </div>
+
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group" id="weeklyQuestList">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <hr style="border:0; border-top:1px dashed #444; margin:5px 0;">
+
+                    <!-- Epic Dungeons -->
+                    <h4 style="margin:5px 0; font-size:0.9rem; color:var(--accent-gold);" data-i18n="pnlEpicDungeon">
+                        Epic Dungeons (Select One)</h4>
+                    <div id="epicDungeonList"> </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <p style="text-align:right; color:var(--accent-gold); margin:5px 0 0 0;">
+                        <span data-i18n="weeklyToTotal">Weekly Total:</span> <span id="weeklyQuestTotal">0</span>
+                        EXP
+                    </p>
+                    <p style="text-align:right; color:#888; font-size:0.8rem; margin:0;">
+                        <span data-i18n="weeklyConverted">Daily Avg:</span> <span id="weeklyQuestDailyAvg">0</span>
+                        EXP
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Hunting Grounds Comparison (Maps) -->
+        <div class="grid-2">
+            <!-- Main Hunting Ground -->
+            <div class="panel">
+                <span class="panel-title" data-i18n="mainMapTitle">Main Hunting Ground</span>
+                <div class="input-group">
+                    <label data-i18n="lblSelectMap">Select Map</label>
+                    <select id="mapSelectMain" onchange="loadMapData('Main')">
+                        <option value="">-- Custom / Select --</option>
+                    </select>
+                </div>
+
+                <input type="hidden" id="mobLevelMain" value="260">
+
+                <div class="input-group">
+                    <label data-i18n="lblBaseExp">Base EXP (Per Mob)</label>
+                    <input type="number" id="baseExpMain" value="0">
+                    <p class="level-bonus-text" id="levelBonusMain" style="text-align:left; margin-bottom:0;">Bonus:
+                        1.0x</p>
+                    <div id="baseExpWithBonusMain" class="helper-text" style="color:#4ade80; text-align:left;">Total
+                        Base: 1,000,000</div>
+                </div>
+                <div class="input-group">
+                    <label data-i18n="lblKillsHr">Kills per Hour</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="number" id="killsPerHourMain" value="0">
+                        <button onclick="calcTheoryKills('Main')" style="padding:5px;"
+                            data-i18n="btnTheory">Theory</button>
+                    </div>
+                    <input type="hidden" id="popCountMain" value="30">
+                </div>
+                <div class="input-group">
+                    <label><span data-i18n="lblBurning">Burning Field</span>: <span
+                            id="burningValMain">0</span>%</label>
+                    <input type="range" class="burning-slider" id="burningMain" min="0" max="100" step="10" value="0"
+                        oninput="document.getElementById('burningValMain').textContent = this.value">
+                </div>
+            </div>
+
+            <!-- Rival Hunting Ground -->
+            <div class="panel">
+                <span class="panel-title" data-i18n="rivalMapTitle">Rival Hunting Ground</span>
+                <div class="input-group">
+                    <label data-i18n="lblSelectMap">Select Map</label>
+                    <select id="mapSelectRival" onchange="loadMapData('Rival')">
+                        <option value="">-- Custom / Select --</option>
+                    </select>
+                </div>
+
+                <input type="hidden" id="mobLevelRival" value="260">
+
+                <div class="input-group">
+                    <label data-i18n="lblBaseExp">Base EXP (Per Mob)</label>
+                    <input type="number" id="baseExpRival" value="0">
+                    <p class="level-bonus-text" id="levelBonusRival" style="text-align:left; margin-bottom:0;">
+                        Bonus:
+                        1.0x</p>
+                    <div id="baseExpWithBonusRival" class="helper-text" style="color:#4ade80; text-align:left;">
+                        Total
+                        Base: 1,000,000</div>
+                </div>
+                <div class="input-group">
+                    <label data-i18n="lblKillsHr">Kills per Hour</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="number" id="killsPerHourRival" value="0">
+                        <button onclick="calcTheoryKills('Rival')" style="padding:5px;"
+                            data-i18n="btnTheory">Theory</button>
+                    </div>
+                    <input type="hidden" id="popCountRival" value="30">
+                </div>
+                <div class="input-group">
+                    <label><span data-i18n="lblBurning">Burning Field</span>: <span
+                            id="burningValRival">100</span>%</label>
+                    <input type="range" class="burning-slider" id="burningRival" min="0" max="100" step="10" value="100"
+                        oninput="document.getElementById('burningValRival').textContent = this.value">
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="panel" style="border-color: var(--accent-gold);">
+            <span class="panel-title" style="color: var(--accent-gold);" data-i18n="resultTitle">Simulation
+                Results</span>
+
+            <div class="grid-2">
+                <!-- Main Result -->
+                <div class="result-box">
+                    <h3 data-i18n="resMainPlan">Main Plan</h3>
+
+                    <div
+                        style="font-size:0.85rem; text-align:left; margin-bottom:5px; border-bottom:1px dashed #555; padding-bottom:5px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span data-i18n="lblBreakHunt">Hunting (1h):</span>
+                            <span id="breakHuntMain">0</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span data-i18n="lblBreakDaily">Daily Q:</span>
+                            <span id="breakDailyMain">0</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span data-i18n="lblBreakWeekly">Weekly (Avg):</span>
+                            <span id="breakWeeklyMain">0</span>
+                        </div>
+                    </div>
+
+                    <p style="text-align:left;"><span data-i18n="resExpHr">Total Daily Exp</span>: <br><span
+                            class="result-value" id="resExpHrMain">0</span></p>
+                    <p style="text-align:left;"><span data-i18n="resHours">Req. Grind Hours</span>: <br><span
+                            class="result-value" id="resHoursMain">0</span></p>
+                    <p style="text-align:left;"><span data-i18n="resDays">Days Remaining</span>: <span
+                            id="resDaysMain">0</span></p>
+                    <div class="result-date" id="resDateMain">----/--/--</div>
+                </div>
+
+                <!-- Rival Result -->
+                <div class="result-box">
+                    <h3 data-i18n="resRivalPlan">Rival Plan</h3>
+
+                    <div
+                        style="font-size:0.85rem; text-align:left; margin-bottom:5px; border-bottom:1px dashed #555; padding-bottom:5px;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span data-i18n="lblBreakHunt">Hunting (1h):</span>
+                            <span id="breakHuntRival">0</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span data-i18n="lblBreakDaily">Daily Q:</span>
+                            <span id="breakDailyRival">0</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span data-i18n="lblBreakWeekly">Weekly (Avg):</span>
+                            <span id="breakWeeklyRival">0</span>
+                        </div>
+                    </div>
+
+                    <p style="text-align:left;"><span data-i18n="resExpHr">Total Daily Exp</span>: <br><span
+                            class="result-value" id="resExpHrRival">0</span></p>
+                    <p style="text-align:left;"><span data-i18n="resHours">Req. Grind Hours</span>: <br><span
+                            class="result-value" id="resHoursRival">0</span></p>
+                    <p style="text-align:left;"><span data-i18n="resDays">Days Remaining</span>: <span
+                            id="resDaysRival">0</span></p>
+                    <div class="result-date" id="resDateRival">----/--/--</div>
+                </div>
+            </div>
+
+            <!-- Comparison Summary -->
+            <div style="text-align:center; margin-top:20px; padding-top:20px; border-top:1px solid #444;">
+                <h3 data-i18n="verdictTitle">Verdict</h3>
+                <p id="verdictText" style="font-size:1.2rem;">Calculated...</p>
+            </div>
+        </div>
+
+        <!-- Simulation Results -->
+        <div class="panel" id="simulationResultsPanel"
+            style="display:none; border-color: var(--accent-red); margin-top:20px;">
+            <span class="panel-title" style="color: var(--accent-red-light);" data-i18n="simTitle">Optimization
+                Route</span>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse: collapse; font-size:0.85rem;">
+                    <thead>
+                        <tr style="color:var(--accent-gold); border-bottom:1px solid #555;">
+                            <th style="padding:5px; text-align:left;">Lv</th>
+                            <th style="padding:5px; text-align:left;">Best Map & MP</th>
+                            <th style="padding:5px; text-align:right;">Daily Total</th>
+                            <th style="padding:5px; text-align:right;">Days</th>
+                            <th style="padding:5px; text-align:right;">Acc. Days</th>
+                        </tr>
+                    </thead>
+                    <tbody id="simulationTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div style="text-align:right; margin-top:10px; font-size:1.1rem; color:var(--accent-gold);">
+                Total Days to Target: <span id="simTotalDays">0</span>
+            </div>
+        </div>
+
+        <div style="text-align:center; color:#666; font-size:0.8rem; margin-top:20px;">
+        </div>
+
+    </div>
+
+    <script>
+        /* =========================================
+           I18N: Language Dictionary
+           ========================================= */
+        const dictionary = {
+            en: {
+                appTitle: "Shasta's Experience Planner Ver0.82",
+                saveLoadTitle: "Save/Load",
+                slot1: "Slot 1",
+                slot2: "Slot 2",
+                slot3: "Slot 3",
+                btnSave: "Save",
+                btnLoad: "Load",
+                charStatusTitle: "Character Status",
+                lblLevel: "Current Level (260-299)",
+                lblCurrentExp: "Current EXP (%)",
+                lblReqExp: "Required EXP",
+                lblDailyTime: "Daily Hunting Time",
+                buffsTitle: "Buffs & Multipliers",
+                lblTotalBuff: "Total Bonus EXP %",
+                noteBuff: "Check boxes to Auto-Add",
+                legendKill: "Kill Quests",
+                lblNotImpl: "Show Not Implemented",
+
+                grpCoupons: "EXP Coupons",
+                buff2x: "2x (+100%)",
+                buff3x: "3x (+200%)",
+                buff4x: "4x (+300%)",
+
+                grpMVP: "MVP",
+
+                grpPotion: "Potions / Special",
+                buffPot10: "Potions(+10%)",
+                buffPot20: "Potions(+20%)",
+                buffLounge: "Lounge(25%)",
+                buffVIP: "VIP(15%)",
+
+                grpEvent: "Event Stats",
+
+                grpSkill: "Skills",
+                buffHS50: "HS(+50%)",
+                buffHS35: "DHS(+35%)",
+                buffDice6: "Dice 6 (+30%)",
+
+                grpStats: "Legion / Hyper",
+                buffLegion10: "Occupy(10%)",
+                buffArtifact12: "Artifact(12%)",
+                buffHyper10: "Hyper(10%)",
+
+                grpTitle: "Title",
+
+                grpJanus: "Sol Janus",
+
+                grpLinks: "Link Skills・Union",
+                buffMerc15: "Merc15",
+                buffMerc20: "Merc20",
+                buffZero10: "Zero10",
+                buffZero12: "Zero12",
+                buffEvan30: "Evan30",
+                buffEvan34: "Evan34",
+
+                grpEquip: "Equipment",
+                buffSpirit30: "Spirit(+30%)",
+                buffRingBlue: "Blue Ring(+15%)",
+                buffRingBlack: "Black Ring(+15%)",
+                buffRing3: "Ring(+3%)",
+
+                lblOtherMult: "Other Multipliers",
+                optNone: "None",
+                optRune: "Rune (+5%)",
+                mainMapTitle: "Main Hunting Ground",
+                rivalMapTitle: "Rival Hunting Ground",
+                lblSelectMap: "Select Map",
+                lblBaseExp: "Base EXP",
+                lblKillsHr: "Kills/Hour",
+                btnTheory: "Theory",
+                lblBurning: "Burning",
+                resultTitle: "Simulation Results",
+                resMainPlan: "Main Plan",
+                resRivalPlan: "Rival Plan",
+                resExpHr: "Total Daily Exp",
+                resHours: "Hours Left",
+                resDays: "Days Left",
+                verdictTitle: "Verdict",
+                verdictWait: "Please configure both hunting grounds.",
+                verdictMainWin: "Main is more efficient! <br>You save <span class='diff-win'>{diff} hours</span> compared to Rival.",
+                verdictRivalWin: "Rival is more efficient! <br>Rival saves <span class='diff-lose'>{diff} hours</span> compared to Main.",
+                verdictDraw: "Both plans are exactly equal.",
+                msgSaved: "Saved to Slot {slot} at {time}",
+                msgLoaded: "Loaded Slot {slot}",
+                levelUp: "Level Up!",
+                now: "Now",
+                never: "Never",
+                bonus: "Bonus",
+                questTitle: "Daily & Weekly Quests",
+                questDailyTitle: "Daily Quests (No Lv Variation)",
+                questWeeklyTitle: "Weekly Quests (Lv Varies)",
+                dailyToTotal: "Daily Total:",
+                weeklyToTotal: "Weekly Total:",
+                weeklyConverted: "(Daily Average):",
+                btnCheckUnder260: "Check < 260",
+                btnCheckOver260: "Check >= 260",
+                btnClear: "Clear",
+                pnlEpicDungeon: "Epic Dungeons (Select Max 1)",
+                lblBonus6x: "6x",
+                lblBonus11x: "11x",
+
+                btnMaxBuffs: "Check High Efficacy Buffs",
+
+                lblBreakHunt: "Hunting (1h):",
+                lblBreakDaily: "Daily Q:",
+                lblBreakWeekly: "Weekly (Avg):",
+
+                lblMonsterPark: "Monster Park",
+                optNone: "None",
+                lblExMonsterPark: "Extreme Monster Park (Weekly)",
+                resHours: "Req. Grind Hours",
+                lblTargetLevel: "Target Level",
+                simTitle: "Optimization Route",
+                btnCalc: "Calc",
+                lblRuns: "Runs",
+                lblMult: "Mult",
+                btnManual: "Manual",
+                manualTitle: "Instruction Manual",
+                lblTreasureBox: "Treasure Box",
+                lblVIPBooster: "VIP Booster",
+                btnBossTracker: "Boss Schedule (External)",
+                manualText: `
+                    <h3>1. Character Setup</h3>
+                    <p>Enter your Current Level, Current EXP%, and Target Level.</p>
+                    <h3>2. Buffs & Multipliers</h3>
+                    <p>Check all EXP buffs you use (Coupons, Potion, Links, Legion, etc.). The "Total Bonus EXP %" will update automatically.</p>
+                    <h3>3. Daily & Weekly Quests</h3>
+                    <p>Select which daily/weekly quests you plan to do. Set Monster Park runs and Sunday Bonus if applicable.</p>
+                    <h3>4. Hunting Grounds</h3>
+                    <p>Select a Main Map. Enter your Kills per Hour (click "Theory" for a theoretical max estimate based on map pop). You can also set a Rival Map to compare.</p>
+                    <h3>5. Result</h3>
+                    <p>View the calculated Daily Total EXP and estimated days to reach your target.</p>
+                    <h3>6. Simulation</h3>
+                    <p>The "Optimized Route Simulation" calculates the theoretical best path level-by-level based on your inputs.</p>
+                    <h3 style="color:var(--accent-red);">Note</h3>
+                    <p>Treasure Box & VIP Booster are currently in development.</p>
+                `
+            },
+            ja: {
+                appTitle: "シャスタの育成計画表 Ver0.82",
+                saveLoadTitle: "記憶(セーブ/ロード)",
+                slot1: "記録 1",
+                slot2: "記録 2",
+                slot3: "記録 3",
+                btnSave: "保存",
+                btnLoad: "読込",
+                charStatusTitle: "ステータス",
+                lblLevel: "現在のレベル (260-299)",
+                lblCurrentExp: "現在の経験値 (%)",
+                lblReqExp: "次レベル必要経験値",
+                lblDailyTime: "1日の狩り時間 (時間:分)",
+                buffsTitle: "経験値バフ & 倍率",
+                lblTotalBuff: "合計獲得経験値 %",
+                noteBuff: "チェックボックスで自動計算",
+
+                grpCoupons: "経験値クーポン",
+                buff2x: "2倍(+100%)",
+                buff3x: "3倍(+200%)",
+                buff4x: "4倍(+300%)",
+
+                grpMVP: "MVP",
+
+                grpPotion: "秘薬・特別",
+                buffPot10: "秘薬(+10%)",
+                buffPot20: "秘薬(+20%)",
+                buffLounge: "ラウンジ(25%)",
+                buffVIP: "VIP(15%)",
+
+                grpEvent: "イベント能力値",
+
+                grpSkill: "スキル",
+                buffHS50: "HS(+50%)",
+                buffHS35: "PHS(+35%)",
+                buffDice6: "ダイス6 (+30%)",
+
+                grpStats: "ステータス / ユニオン / アーティファクト",
+                buffLegion10: "攻撃隊占領効果(+10%)",
+                buffArtifact12: "アーティファクト(+12%)",
+                buffHyper10: "ハイパーステータス(+10%)",
+
+                grpTitle: "称号",
+
+                grpJanus: "ソルヤーヌス",
+
+                grpLinks: "リンクスキル・ユニオン",
+                buffMerc15: "メルセ15",
+                buffMerc20: "メルセ20",
+                buffZero10: "ゼロ10",
+                buffZero12: "ゼロ12",
+                buffEvan30: "エヴァン30",
+                buffEvan34: "エヴァン34",
+
+                grpEquip: "装備",
+                buffSpirit30: "精霊PD(+30%)",
+                buffRingBlue: "青指輪(+15%)",
+                buffRingBlack: "黒指輪(+15%)",
+                buffRing3: "指輪(+3%)",
+
+                lblOtherMult: "その他倍率",
+                optNone: "なし",
+                optRune: "ルーン(+5%)",
+                mainMapTitle: "メインの狩場",
+                rivalMapTitle: "比較する狩場",
+                lblSelectMap: "狩場を選択",
+                lblBaseExp: "基礎経験値",
+                lblKillsHr: "1時間の討伐数",
+                btnTheory: "理論値",
+                lblBurning: "バーニング",
+                resultTitle: "シミュレーション結果",
+                resMainPlan: "メインプラン",
+                resRivalPlan: "比較プラン",
+                resExpHr: "1日合計経験値",
+                resHours: "必要狩り時間",
+                resDays: "必要日数",
+                verdictTitle: "判定",
+                verdictWait: "両方の狩場を設定してください",
+                verdictMainWin: "メインの方が効率的ですわ！ <br>比較対象より <span class='diff-win'>{diff} 時間</span> 早く終わります。",
+                verdictRivalWin: "比較対象の方が効率的ですわ！ <br>メインより <span class='diff-lose'>{diff} 時間</span> 早く終わります。",
+                verdictDraw: "どちらも全く同じ効率ですわ。",
+                msgSaved: "スロット{slot}に保存しました ({time})",
+                msgLoaded: "スロット{slot}を読み込みました",
+                levelUp: "レベルアップ！",
+                now: "達成済み",
+                never: "到達不能",
+                bonus: "ボーナス",
+                questTitle: "デイリー & ウィークリークエスト",
+                questDailyTitle: "デイリークエスト (レベル変動なし)",
+                questWeeklyTitle: "ウィークリークエスト (レベル変動あり)",
+                dailyToTotal: "日課合計:",
+                weeklyToTotal: "週課合計:",
+                weeklyConverted: "(1日平均):",
+                btnCheckUnder260: "260未満",
+                btnCheckOver260: "260以上",
+                btnClear: "クリア",
+                pnlEpicDungeon: "エピックダンジョン (1つのみ選択)",
+                lblBonus6x: "6倍",
+                lblBonus11x: "11倍",
+
+                btnMaxBuffs: "効力の高いものをすべてチェック",
+
+                lblBreakHunt: "狩り(1時間):",
+                lblBreakDaily: "デイリー:",
+                lblBreakWeekly: "ウィークリー(1日平均値):",
+
+                lblMonsterPark: "モンスターパーク(デイリー)",
+                lblExMonsterPark: "エクストリーム モンスターパーク(週課)",
+                lblTargetLevel: "目標レベル",
+                simTitle: "最適化ルートシミュレーション",
+                btnCalc: "計測",
+                lblRuns: "回数",
+                lblMult: "倍率",
+                legendKill: "討伐クエスト",
+                lblNotImpl: "未実装地域を表示",
+                btnManual: "取扱説明書",
+                manualTitle: "取扱説明書",
+                lblTreasureBox: "トレジャーボックス",
+                lblVIPBooster: "VIPブースター",
+                btnBossTracker: "ボス予定表(別ページ)",
+                manualText: `
+                        <h3>1. キャラクター設定</h3>
+                        <p>現在のレベル、現在の経験値%、目標レベルを入力します。</p>
+                        <h3>2. 経験値バフ & 倍率</h3>
+                        <p>使用する経験値バフ（クーポン、秘薬、リンクスキル、ユニオンなど）にチェックを入れてください。「合計獲得経験値 %」が自動的に更新されます。</p>
+                        <h3>3. デイリー & ウィークリークエスト</h3>
+                        <p>実施するクエストを選択します。モンスターパークの回数やサンデーメイプルの有無も設定できます。</p>
+                        <h3>4. 狩場設定</h3>
+                        <p>メインの狩場を選択し、1時間の討伐数を入力してください（「理論値」ボタンで沸き数からの推定値を入力できます）。比較用の狩場を設定して効率を比べることも可能です。</p>
+                        <h3>5. 結果確認</h3>
+                        <p>1日の合計獲得経験値と、目標レベル到達までの推定日数が表示されます。</p>
+                        <h3>6. シミュレーション</h3>
+                        <p>「最適化ルートシミュレーション」は、設定された条件（バフ、討伐効率など）を元に、レベルごとの最適な狩場とクエストの組み合わせを自動計算します。</p>
+                        <h3 style="color:var(--accent-red);">注意</h3>
+                        <p>トレジャーボックスおよびVIPブースターは現在開発中です。</p>
+                `
+            }
+        };
+
+        let currentLang = 'ja'; // Default language
+
+        /* =========================================
+           DATA: JMS EXP Table & Mob Database
+           ========================================= */
+        const expTableJMS = {
+            260: 1731919984062, 261: 1749239183902, 262: 1766731575741, 263: 1784398891498, 264: 1802242880412,
+            265: 2342915744535, 266: 2366344901980, 267: 2390008350999, 268: 2413908434508, 269: 2438047518853,
+            270: 5412465491851, 271: 5466590146770, 272: 5521256048237, 273: 5576468608720, 274: 5632233294807,
+            275: 11377111255510, 276: 12514822381061, 277: 13766304619167, 278: 15142935081084, 279: 16657228589191,
+            280: 33647601750165, 281: 37012361925183, 282: 40713598117701, 283: 44784957929471, 284: 49263453722418,
+            285: 99512176519285, 286: 109463394171214, 287: 120409733588335, 288: 132450706947169, 289: 145695777641885,
+            290: 294305470836608, 291: 323736017920269, 292: 356109619712296, 293: 391720581683526, 294: 430892639851879,
+            295: 870403132500795, 296: 957443445750874, 297: 1053187790325960, 298: 1158506569358560, 299: 1737759854037840
+        };
+
+        const mobs = [
+            { area: "セルニウム", name: "セルニウム西の城壁1", nameEn: "Cernium Western City Ramparts 1", areaEn: "Cernium", lv: 260, pop: 33, exp: 1725461 },
+            { area: "セルニウム", name: "セルニウム西の城壁２", nameEn: "Cernium Western City Ramparts 2", areaEn: "Cernium", lv: 260, pop: 32, exp: 1725461 },
+            { area: "セルニウム", name: "セルニウム西の城壁３", nameEn: "Cernium Western City Ramparts 3", areaEn: "Cernium", lv: 260, pop: 38, exp: 1725461 },
+            { area: "セルニウム", name: "海辺の岩石地帯1", nameEn: "Rocky Overlook 1", areaEn: "Cernium", lv: 260, pop: 33, exp: 1725461 },
+            { area: "セルニウム", name: "海辺の岩石地帯2", nameEn: "Rocky Overlook 2", areaEn: "Cernium", lv: 260, pop: 33, exp: 1725461 },
+            { area: "セルニウム", name: "海辺の岩石地帯3", nameEn: "Rocky Overlook 3", areaEn: "Cernium", lv: 260, pop: 37, exp: 1725461 },
+            { area: "セルニウム", name: "海辺の岩石地帯4", nameEn: "Rocky Overlook 4", areaEn: "Cernium", lv: 260, pop: 37, exp: 1725461 },
+            { area: "セルニウム", name: "セルニウム東の城壁1", nameEn: "Cernium Eastern City Ramparts 1", areaEn: "Cernium", lv: 261, pop: 32, exp: 1750290 },
+            { area: "セルニウム", name: "セルニウム東の城壁2", nameEn: "Cernium Eastern City Ramparts 2", areaEn: "Cernium", lv: 261, pop: 33, exp: 1750290 },
+            { area: "セルニウム", name: "セルニウム東の城壁3", nameEn: "Cernium Eastern City Ramparts 3", areaEn: "Cernium", lv: 261, pop: 37, exp: 1750290 },
+            { area: "セルニウム", name: "王立図書館第１区域", nameEn: "Royal Library Section 1", areaEn: "Cernium", lv: 261, pop: 33, exp: 1750290 },
+            { area: "セルニウム", name: "王立図書館第２区域", nameEn: "Royal Library Section 2", areaEn: "Cernium", lv: 261, pop: 32, exp: 1750290 },
+            { area: "セルニウム", name: "王立図書館第３区域", nameEn: "Royal Library Section 3", areaEn: "Cernium", lv: 261, pop: 37, exp: 1750290 },
+            { area: "セルニウム", name: "王立図書館第４区域", nameEn: "Royal Library Section 4", areaEn: "Cernium", lv: 261, pop: 33, exp: 1750290 },
+            { area: "セルニウム", name: "王立図書館第５区域", nameEn: "Royal Library Section 5", areaEn: "Cernium", lv: 261, pop: 33, exp: 1750290 },
+            { area: "セルニウム", name: "王立図書館第６区域", nameEn: "Royal Library Section 6", areaEn: "Cernium", lv: 261, pop: 37, exp: 1750290 },
+            { area: "燃えるセルニウム", name: "激戦の西の城壁1", nameEn: "Western City Ramparts in Battle 1", areaEn: "Burning Cernium", lv: 262, pop: 33, exp: 1775159 },
+            { area: "燃えるセルニウム", name: "激戦の西の城壁2", nameEn: "Western City Ramparts in Battle 2", areaEn: "Burning Cernium", lv: 262, pop: 33, exp: 1775159 },
+            { area: "燃えるセルニウム", name: "激戦の西の城壁3", nameEn: "Western City Ramparts in Battle 3", areaEn: "Burning Cernium", lv: 262, pop: 37, exp: 1775159 },
+            { area: "燃えるセルニウム", name: "激戦の西の城壁4", nameEn: "Western City Ramparts in Battle 4", areaEn: "Burning Cernium", lv: 262, pop: 37, exp: 1775159 },
+            { area: "燃えるセルニウム", name: "激戦の東の城壁1", nameEn: "Eastern City Ramparts in Battle 1", areaEn: "Burning Cernium", lv: 263, pop: 33, exp: 1800203 },
+            { area: "燃えるセルニウム", name: "激戦の東の城壁2", nameEn: "Eastern City Ramparts in Battle 2", areaEn: "Burning Cernium", lv: 263, pop: 33, exp: 1800203 },
+            { area: "燃えるセルニウム", name: "激戦の東の城壁3", nameEn: "Eastern City Ramparts in Battle 3", areaEn: "Burning Cernium", lv: 263, pop: 38, exp: 1800203 },
+            { area: "燃えるセルニウム", name: "激戦の東の城壁4", nameEn: "Eastern City Ramparts in Battle 4", areaEn: "Burning Cernium", lv: 263, pop: 33, exp: 1800203 },
+            { area: "燃えるセルニウム", name: "激戦の東の城壁5", nameEn: "Eastern City Ramparts in Battle 5", areaEn: "Burning Cernium", lv: 263, pop: 32, exp: 1800203 },
+            { area: "燃えるセルニウム", name: "激戦の東の城壁6", nameEn: "Eastern City Ramparts in Battle 6", areaEn: "Burning Cernium", lv: 263, pop: 37, exp: 1800203 },
+            { area: "燃えるセルニウム", name: "燃える王立図書館第1区域", nameEn: "Burning Royal Library Section 1", areaEn: "Burning Cernium", lv: 264, pop: 33, exp: 1828409 },
+            { area: "燃えるセルニウム", name: "燃える王立図書館第2区域", nameEn: "Burning Royal Library Section 2", areaEn: "Burning Cernium", lv: 264, pop: 33, exp: 1828409 },
+            { area: "燃えるセルニウム", name: "燃える王立図書館第3区域", nameEn: "Burning Royal Library Section 3", areaEn: "Burning Cernium", lv: 264, pop: 38, exp: 1828409 },
+            { area: "燃えるセルニウム", name: "燃える王立図書館第4区域", nameEn: "Burning Royal Library Section 4", areaEn: "Burning Cernium", lv: 264, pop: 33, exp: 1828409 },
+            { area: "燃えるセルニウム", name: "燃える王立図書館第5区域", nameEn: "Burning Royal Library Section 5", areaEn: "Burning Cernium", lv: 264, pop: 33, exp: 1828409 },
+            { area: "燃えるセルニウム", name: "燃える王立図書館第6区域", nameEn: "Burning Royal Library Section 6", areaEn: "Burning Cernium", lv: 264, pop: 38, exp: 1828409 },
+            { area: "ホテルアルクス", name: "無法者たちが支配する荒野1", nameEn: "Outlaw-Infested Wastes 1", areaEn: "Hotel Arcus", lv: 265, pop: 33, exp: 2056974 },
+            { area: "ホテルアルクス", name: "無法者たちが支配する荒野2", nameEn: "Outlaw-Infested Wastes 2", areaEn: "Hotel Arcus", lv: 265, pop: 33, exp: 2056974 },
+            { area: "ホテルアルクス", name: "無法者たちが支配する荒野3", nameEn: "Outlaw-Infested Wastes 3", areaEn: "Hotel Arcus", lv: 265, pop: 37, exp: 2056974 },
+            { area: "ホテルアルクス", name: "無法者たちが支配する荒野4", nameEn: "Outlaw-Infested Wastes 4", areaEn: "Hotel Arcus", lv: 265, pop: 38, exp: 2056974 },
+            { area: "ホテルアルクス", name: "浪漫が沈むドライブシアター1", nameEn: "Nostalgic Drive-in Theater 1", areaEn: "Hotel Arcus", lv: 266, pop: 33, exp: 2085219 },
+            { area: "ホテルアルクス", name: "浪漫が沈むドライブシアター2", nameEn: "Nostalgic Drive-in Theater 2", areaEn: "Hotel Arcus", lv: 266, pop: 33, exp: 2085219 },
+            { area: "ホテルアルクス", name: "浪漫が沈むドライブシアター3", nameEn: "Nostalgic Drive-in Theater 3", areaEn: "Hotel Arcus", lv: 266, pop: 38, exp: 2085219 },
+            { area: "ホテルアルクス", name: "浪漫が沈むドライブシアター4", nameEn: "Nostalgic Drive-in Theater 4", areaEn: "Hotel Arcus", lv: 267, pop: 33, exp: 2113572 },
+            { area: "ホテルアルクス", name: "浪漫が沈むドライブシアター5", nameEn: "Nostalgic Drive-in Theater 5", areaEn: "Hotel Arcus", lv: 267, pop: 32, exp: 2113572 },
+            { area: "ホテルアルクス", name: "浪漫が沈むドライブシアター6", nameEn: "Nostalgic Drive-in Theater 6", areaEn: "Hotel Arcus", lv: 267, pop: 33, exp: 2113572 },
+            { area: "ホテルアルクス", name: "終点のない横断列車1", nameEn: "Train with No Destination 1", areaEn: "Hotel Arcus", lv: 268, pop: 33, exp: 2145596 },
+            { area: "ホテルアルクス", name: "終点のない横断列車2", nameEn: "Train with No Destination 2", areaEn: "Hotel Arcus", lv: 268, pop: 33, exp: 2145596 },
+            { area: "ホテルアルクス", name: "終点のない横断列車3", nameEn: "Train with No Destination 3", areaEn: "Hotel Arcus", lv: 268, pop: 37, exp: 2145596 },
+            { area: "ホテルアルクス", name: "終点のない横断列車4", nameEn: "Train with No Destination 4", areaEn: "Hotel Arcus", lv: 269, pop: 33, exp: 2174274 },
+            { area: "ホテルアルクス", name: "終点のない横断列車5", nameEn: "Train with No Destination 5", areaEn: "Hotel Arcus", lv: 269, pop: 33, exp: 2174274 },
+            { area: "ホテルアルクス", name: "終点のない横断列車6", nameEn: "Train with No Destination 6", areaEn: "Hotel Arcus", lv: 269, pop: 37, exp: 2174274 },
+            { area: "オーディウム", name: "城門への道1", nameEn: "Road to the Castle's Gate 1", areaEn: "Odium", lv: 270, pop: 33, exp: 2445217 },
+            { area: "オーディウム", name: "城門への道2", nameEn: "Road to the Castle's Gate 2", areaEn: "Odium", lv: 270, pop: 33, exp: 2445217 },
+            { area: "オーディウム", name: "城門への道3", nameEn: "Road to the Castle's Gate 3", areaEn: "Odium", lv: 270, pop: 36, exp: 2445217 },
+            { area: "オーディウム", name: "城門への道4", nameEn: "Road to the Castle's Gate 4", areaEn: "Odium", lv: 270, pop: 38, exp: 2445217 },
+            { area: "オーディウム", name: "城門への道5", nameEn: "Road to the Castle's Gate 5", areaEn: "Odium", lv: 270, pop: 38, exp: 2445217 },
+            { area: "オーディウム", name: "占領された路地1", nameEn: "Captured Alley 1", areaEn: "Odium", lv: 271, pop: 33, exp: 2481337 },
+            { area: "オーディウム", name: "占領された路地2", nameEn: "Captured Alley 2", areaEn: "Odium", lv: 271, pop: 33, exp: 2481337 },
+            { area: "オーディウム", name: "占領された路地3", nameEn: "Captured Alley 3", areaEn: "Odium", lv: 271, pop: 38, exp: 2481337 },
+            { area: "オーディウム", name: "占領された路地4", nameEn: "Captured Alley 4", areaEn: "Odium", lv: 271, pop: 38, exp: 2481337 },
+            { area: "オーディウム", name: "日が差し込む実験室1", nameEn: "Sunny Laboratory 1", areaEn: "Odium", lv: 272, pop: 33, exp: 2513634 },
+            { area: "オーディウム", name: "日が差し込む実験室2", nameEn: "Sunny Laboratory 2", areaEn: "Odium", lv: 272, pop: 38, exp: 2513634 },
+            { area: "オーディウム", name: "日が差し込む実験室3", nameEn: "Sunny Laboratory 3", areaEn: "Odium", lv: 272, pop: 38, exp: 2513634 },
+            { area: "オーディウム", name: "閉ざされた扉の向こうの実験室1", nameEn: "Laboratory Behind Locked Door 1", areaEn: "Odium", lv: 273, pop: 33, exp: 2546149 },
+            { area: "オーディウム", name: "閉ざされた扉の向こうの実験室2", nameEn: "Laboratory Behind Locked Door 2", areaEn: "Odium", lv: 274, pop: 38, exp: 2564528 },
+            { area: "オーディウム", name: "閉ざされた扉の向こうの実験室3", nameEn: "Laboratory Behind Locked Door 3", areaEn: "Odium", lv: 274, pop: 38, exp: 2582906 },
+            { area: "オーディウム", name: "閉ざされた扉の向こうの実験室4", nameEn: "Laboratory Behind Locked Door 4", areaEn: "Odium", lv: 274, pop: 38, exp: 2582906 },
+            { area: "桃源郷", name: "活力が戻ってきた春1", nameEn: "Blooming Spring 1", areaEn: "Shangri-La", lv: 275, pop: 33, exp: 2903024 },
+            { area: "桃源郷", name: "活力が戻ってきた春2", nameEn: "Blooming Spring 2", areaEn: "Shangri-La", lv: 275, pop: 38, exp: 2903024 },
+            { area: "桃源郷", name: "活力が戻ってきた春3", nameEn: "Blooming Spring 3", areaEn: "Shangri-La", lv: 275, pop: 38, exp: 2903024 },
+            { area: "桃源郷", name: "活力が戻ってきた春4", nameEn: "Blooming Spring 4", areaEn: "Shangri-La", lv: 275, pop: 38, exp: 2903024 },
+            { area: "桃源郷", name: "活力が戻ってきた春5", nameEn: "Blooming Spring 5", areaEn: "Shangri-La", lv: 275, pop: 38, exp: 2903024 },
+            { area: "桃源郷", name: "微かに明るい夏1", nameEn: "Gentle Summer 1", areaEn: "Shangri-La", lv: 276, pop: 33, exp: 2939616 },
+            { area: "桃源郷", name: "微かに明るい夏2", nameEn: "Gentle Summer 2", areaEn: "Shangri-La", lv: 276, pop: 38, exp: 2939616 },
+            { area: "桃源郷", name: "微かに明るい夏3", nameEn: "Gentle Summer 3", areaEn: "Shangri-La", lv: 276, pop: 38, exp: 2939616 },
+            { area: "桃源郷", name: "微かに明るい夏4", nameEn: "Gentle Summer 4", areaEn: "Shangri-La", lv: 276, pop: 38, exp: 2939616 },
+            { area: "桃源郷", name: "微かに明るい夏5", nameEn: "Gentle Summer 5", areaEn: "Shangri-La", lv: 276, pop: 38, exp: 2939616 },
+            { area: "桃源郷", name: "色を失った秋1", nameEn: "Drowsy Autumn 1", areaEn: "Shangri-La", lv: 277, pop: 33, exp: 2981010 },
+            { area: "桃源郷", name: "色を失った秋2", nameEn: "Drowsy Autumn 2", areaEn: "Shangri-La", lv: 277, pop: 38, exp: 2981010 },
+            { area: "桃源郷", name: "色を失った秋3", nameEn: "Drowsy Autumn 3", areaEn: "Shangri-La", lv: 277, pop: 38, exp: 2981010 },
+            { area: "桃源郷", name: "色を失った秋4", nameEn: "Drowsy Autumn 4", areaEn: "Shangri-La", lv: 277, pop: 38, exp: 2981010 },
+            { area: "桃源郷", name: "色を失った秋5", nameEn: "Drowsy Autumn 5", areaEn: "Shangri-La", lv: 277, pop: 38, exp: 2981010 },
+            { area: "桃源郷", name: "残酷な痕跡の冬1", nameEn: "Harsh Winter 1", areaEn: "Shangri-La", lv: 278, pop: 33, exp: 3017988 },
+            { area: "桃源郷", name: "残酷な痕跡の冬2", nameEn: "Harsh Winter 2", areaEn: "Shangri-La", lv: 279, pop: 38, exp: 3038852 },
+            { area: "桃源郷", name: "残酷な痕跡の冬3", nameEn: "Harsh Winter 3", areaEn: "Shangri-La", lv: 279, pop: 38, exp: 3059716 },
+            { area: "桃源郷", name: "残酷な痕跡の冬4", nameEn: "Harsh Winter 4", areaEn: "Shangri-La", lv: 279, pop: 38, exp: 3059716 },
+            { area: "桃源郷", name: "残酷な痕跡の冬5", nameEn: "Harsh Winter 5", areaEn: "Shangri-La", lv: 279, pop: 38, exp: 3059716 },
+            { area: "アルテリア", name: "外郭戦闘地域1", nameEn: "Combat Zone Outskirts 1", areaEn: "Arteria", lv: 280, pop: 39, exp: 3436027 },
+            { area: "アルテリア", name: "北側外郭地域", nameEn: "Northern Outskirts", areaEn: "Arteria", lv: 280, pop: 35, exp: 3436027 },
+            { area: "アルテリア", name: "西側外郭地域", nameEn: "Western Outskirts", areaEn: "Arteria", lv: 280, pop: 39, exp: 3436027 },
+            { area: "アルテリア", name: "外郭戦闘地域2", nameEn: "Combat Zone Outskirts 2", areaEn: "Arteria", lv: 281, pop: 39, exp: 3482914 },
+            { area: "アルテリア", name: "南側外郭地域", nameEn: "Eastern Outskirts", areaEn: "Arteria", lv: 281, pop: 39, exp: 3482914 },
+            { area: "アルテリア", name: "東側外郭地域", nameEn: "Eastern Outskirts", areaEn: "Arteria", lv: 281, pop: 35, exp: 3482914 },
+            { area: "アルテリア", name: "最下層の通路1", nameEn: "Bottom Deck Passage 1", areaEn: "Arteria", lv: 282, pop: 35, exp: 3524768 },
+            { area: "アルテリア", name: "最下層の通路2", nameEn: "Bottom Deck Passage 2", areaEn: "Arteria", lv: 282, pop: 39, exp: 3524768 },
+            { area: "アルテリア", name: "最下層の通路3", nameEn: "Bottom Deck Passage 3", areaEn: "Arteria", lv: 282, pop: 39, exp: 3524768 },
+            { area: "アルテリア", name: "最下層の通路4", nameEn: "Bottom Deck Passage 4", areaEn: "Arteria", lv: 283, pop: 35, exp: 3572010 },
+            { area: "アルテリア", name: "最下層の通路5", nameEn: "Bottom Deck Passage 5", areaEn: "Arteria", lv: 283, pop: 39, exp: 3572010 },
+            { area: "アルテリア", name: "最下層の通路6", nameEn: "Bottom Deck Passage 6", areaEn: "Arteria", lv: 283, pop: 39, exp: 3572010 },
+            { area: "アルテリア", name: "最上層の通路1", nameEn: "Top Deck Passage 1", areaEn: "Arteria", lv: 284, pop: 35, exp: 3614278 },
+            { area: "アルテリア", name: "最上層の通路2", nameEn: "Top Deck Passage 2", areaEn: "Arteria", lv: 284, pop: 39, exp: 3614278 },
+            { area: "アルテリア", name: "最上層の通路3", nameEn: "Top Deck Passage 3", areaEn: "Arteria", lv: 284, pop: 35, exp: 3614278 },
+            { area: "アルテリア", name: "最上層の通路4", nameEn: "Top Deck Passage 4", areaEn: "Arteria", lv: 284, pop: 39, exp: 3614278 },
+            { area: "アルテリア", name: "最上層の通路5", nameEn: "Top Deck Passage 5", areaEn: "Arteria", lv: 284, pop: 35, exp: 3614278 },
+            { area: "アルテリア", name: "最上層の通路6", nameEn: "Top Deck Passage 6", areaEn: "Arteria", lv: 284, pop: 39, exp: 3614278 },
+            { area: "アルテリア", name: "最上層の通路7", nameEn: "Top Deck Passage 7", areaEn: "Arteria", lv: 284, pop: 39, exp: 3614278 },
+            { area: "アルテリア", name: "最上層の通路8", nameEn: "Top Deck Passage 8", areaEn: "Arteria", lv: 284, pop: 39, exp: 3614278 },
+            { area: "カルシオン", name: "巨大サンゴ礁の群落1", nameEn: "Giant Coral Colony 1", areaEn: "Carcion", lv: 285, pop: 35, exp: 4062965 },
+            { area: "カルシオン", name: "巨大サンゴ礁の群落2", nameEn: "Giant Coral Colony 2", areaEn: "Carcion", lv: 285, pop: 39, exp: 4062965 },
+            { area: "カルシオン", name: "巨大サンゴ礁の群落3", nameEn: "Giant Coral Colony 3", areaEn: "Carcion", lv: 286, pop: 39, exp: 4110304 },
+            { area: "カルシオン", name: "静かな海岸1", nameEn: "Calm Beach 1", areaEn: "Carcion", lv: 286, pop: 39, exp: 4110304 },
+            { area: "カルシオン", name: "静かな海岸2", nameEn: "Calm Beach 2", areaEn: "Carcion", lv: 286, pop: 39, exp: 4110304 },
+            { area: "カルシオン", name: "静かな海岸3", nameEn: "Calm Beach 3", areaEn: "Carcion", lv: 286, pop: 39, exp: 4110304 },
+            { area: "カルシオン", name: "滝の森1", nameEn: "Enfolding Forest 1", areaEn: "Carcion", lv: 287, pop: 35, exp: 4163751 },
+            { area: "カルシオン", name: "滝の森2", nameEn: "Enfolding Forest 2", areaEn: "Carcion", lv: 287, pop: 35, exp: 4163751 },
+            { area: "カルシオン", name: "滝の森3", nameEn: "Enfolding Forest 3", areaEn: "Carcion", lv: 288, pop: 39, exp: 4217526 },
+            { area: "カルシオン", name: "影差す木の幹1", nameEn: "Among Tainted Trees 1", areaEn: "Carcion", lv: 288, pop: 39, exp: 4217526 },
+            { area: "カルシオン", name: "影差す木の幹2", nameEn: "Among Tainted Trees 2", areaEn: "Carcion", lv: 288, pop: 39, exp: 4217526 },
+            { area: "カルシオン", name: "影差す木の幹3", nameEn: "Among Tainted Trees 3", areaEn: "Carcion", lv: 288, pop: 39, exp: 4217526 },
+            { area: "カルシオン", name: "息が詰まる洞窟1", nameEn: "Breathtaking Cave 1", areaEn: "Carcion", lv: 289, pop: 35, exp: 4217526 },
+            { area: "カルシオン", name: "息が詰まる洞窟2", nameEn: "Breathtaking Cave 2", areaEn: "Carcion", lv: 289, pop: 39, exp: 4217526 },
+            { area: "カルシオン", name: "息が詰まる洞窟3", nameEn: "Breathtaking Cave 3", areaEn: "Carcion", lv: 289, pop: 39, exp: 4217526 },
+            { area: "カルシオン", name: "息が詰まる洞窟4", nameEn: "Breathtaking Cave 4", areaEn: "Carcion", lv: 289, pop: 39, exp: 4217526 },
+            { area: "カルシオン", name: "沈んだ遺跡地1", nameEn: "Sunken Ruins 1", areaEn: "Carcion", lv: 289, pop: 35, exp: 4217526 },
+            { area: "カルシオン", name: "沈んだ遺跡地2", nameEn: "Sunken Ruins 2", areaEn: "Carcion", lv: 289, pop: 39, exp: 4217526 },
+            { area: "カルシオン", name: "沈んだ遺跡地3", nameEn: "Sunken Ruins 3", areaEn: "Carcion", lv: 289, pop: 39, exp: 4217526 },
+            { area: "カルシオン", name: "沈んだ遺跡地4", nameEn: "Sunken Ruins 4", areaEn: "Carcion", lv: 289, pop: 39, exp: 4217526 },
+            { area: "タラハート", name: "灰と沈黙の地1", nameEn: "Silent Ashlands 1", areaEn: "Tallahart", lv: 290, pop: 39, exp: 4793318 },
+            { area: "タラハート", name: "灰と沈黙の地2", nameEn: "Silent Ashlands 2", areaEn: "Tallahart", lv: 290, pop: 39, exp: 4793318 },
+            { area: "タラハート", name: "灰と沈黙の地3", nameEn: "Silent Ashlands 3", areaEn: "Tallahart", lv: 291, pop: 39, exp: 4820165 },
+            { area: "タラハート", name: "灰と沈黙の地4", nameEn: "Silent Ashlands 4", areaEn: "Tallahart", lv: 291, pop: 39, exp: 4847012 },
+            { area: "タラハート", name: "灰と沈黙の地5", nameEn: "Silent Ashlands 5", areaEn: "Tallahart", lv: 291, pop: 39, exp: 4847012 },
+            { area: "タラハート", name: "摂理と運命の戦場1", nameEn: "Fate-Fields of Providence 1", areaEn: "Tallahart", lv: 291, pop: 39, exp: 4847012 },
+            { area: "タラハート", name: "摂理と運命の戦場2", nameEn: "Fate-Fields of Providence 2", areaEn: "Tallahart", lv: 291, pop: 39, exp: 4847012 },
+            { area: "タラハート", name: "摂理と運命の戦場3", nameEn: "Fate-Fields of Providence 3", areaEn: "Tallahart", lv: 291, pop: 39, exp: 4847012 },
+            { area: "タラハート", name: "審判と運命の戦場1", nameEn: "Fate-Fields of Judgement 1", areaEn: "Tallahart", lv: 292, pop: 39, exp: 4907812 },
+            { area: "タラハート", name: "審判と運命の戦場2", nameEn: "Fate-Fields of Judgement 2", areaEn: "Tallahart", lv: 292, pop: 39, exp: 4907812 },
+            { area: "タラハート", name: "審判と運命の戦場3", nameEn: "Fate-Fields of Judgement 3", areaEn: "Tallahart", lv: 292, pop: 39, exp: 4907812 },
+            { area: "タラハート", name: "永遠と運命の戦場1", nameEn: "Fate-Fields of Eternity 1", areaEn: "Tallahart", lv: 293, pop: 39, exp: 4968977 },
+            { area: "タラハート", name: "永遠と運命の戦場2", nameEn: "Fate-Fields of Eternity 2", areaEn: "Tallahart", lv: 293, pop: 39, exp: 4968977 },
+            { area: "タラハート", name: "永遠と運命の戦場3", nameEn: "Fate-Fields of Eternity 3", areaEn: "Tallahart", lv: 293, pop: 39, exp: 4968977 },
+            { area: "タラハート", name: "夜の道1", nameEn: "Night Road 1", areaEn: "Tallahart", lv: 294, pop: 39, exp: 5023491 },
+            { area: "タラハート", name: "夜の道2", nameEn: "Night Road 2", areaEn: "Tallahart", lv: 294, pop: 39, exp: 5023491 },
+            { area: "タラハート", name: "夜の道3", nameEn: "Night Road 3", areaEn: "Tallahart", lv: 294, pop: 39, exp: 5023491 },
+            { area: "タラハート", name: "夜の道4", nameEn: "Night Road 4", areaEn: "Tallahart", lv: 294, pop: 39, exp: 5023491 },
+            { area: "タラハート", name: "幻影の道1", nameEn: "Phantasmal Road 1", areaEn: "Tallahart", lv: 294, pop: 39, exp: 5023491 },
+            { area: "タラハート", name: "幻影の道2", nameEn: "Phantasmal Road 2", areaEn: "Tallahart", lv: 294, pop: 39, exp: 5023491 },
+            { area: "タラハート", name: "幻影の道3", nameEn: "Phantasmal Road 3", areaEn: "Tallahart", lv: 294, pop: 39, exp: 5023491 },
+            { area: "タラハート", name: "幻影の道4", nameEn: "Phantasmal Road 4", areaEn: "Tallahart", lv: 294, pop: 39, exp: 5023491 },
+            { area: "未実装地域", name: "未実装", nameEn: "Not Implemented", areaEn: "Unknown", lv: 295, pop: 39, exp: 5643220 },
+            { area: "未実装地域", name: "未実装", nameEn: "Not Implemented", areaEn: "Unknown", lv: 296, pop: 39, exp: 5711948 },
+            { area: "未実装地域", name: "未実装", nameEn: "Not Implemented", areaEn: "Unknown", lv: 297, pop: 39, exp: 5781080 },
+            { area: "未実装地域", name: "未実装", nameEn: "Not Implemented", areaEn: "Unknown", lv: 298, pop: 39, exp: 5842650 },
+            { area: "未実装地域", name: "未実装", nameEn: "Not Implemented", areaEn: "Unknown", lv: 299, pop: 39, exp: 5912186 }
+        ];
+
+
+        /* --- Quest Data --- */
+        const dailyQuests = [
+            { nameEn: "Road to Extinction", nameJp: "消滅の旅路", exp: 732132258, group: "under260", reqLv: 200 },
+            { nameEn: "Chew Chew Island", nameJp: "チューチューアイランド", exp: 2141658246, group: "under260", reqLv: 210 },
+            { nameEn: "Lacheln", nameJp: "レヘルン", exp: 3189098250, group: "under260", reqLv: 215 },
+            { nameEn: "Arcana", nameJp: "アルカナ", exp: 3305187639, group: "under260", reqLv: 220 },
+            { nameEn: "Moras", nameJp: "モラス", exp: 4398266165, group: "under260", reqLv: 225 },
+            { nameEn: "Esfera", nameJp: "エスフェラ", exp: 4530843954, group: "under260", reqLv: 230 },
+            { nameEn: "Moonbridge", nameJp: "ムーンブリッジ", exp: 8397548775, group: "under260", reqLv: 240 },
+            { nameEn: "Labyrinth of Suffering", nameJp: "苦痛の迷宮", exp: 9057690000, group: "under260", reqLv: 245 },
+            { nameEn: "Limen", nameJp: "リメン", exp: 10225741680, group: "under260", reqLv: 250 },
+            { nameEn: "Cernium", nameJp: "セルニウム", exp: 16455682080, group: "over260", reqLv: 260 },
+            { nameEn: "Hotel Arcs", nameJp: "ホテルアルクス", exp: 19372782409, group: "over260", reqLv: 265 },
+            { nameEn: "Odium", nameJp: "オーディウム", exp: 23246151120, group: "over260", reqLv: 270 },
+            { nameEn: "Shangri-La", nameJp: "桃源郷", exp: 32127015480, group: "over260", reqLv: 275 },
+            { nameEn: "Arteria", nameJp: "アルテリア", exp: 38593455264, group: "over260", reqLv: 280 },
+            { nameEn: "Carcion", nameJp: "カルシオン", exp: 45635222880, group: "over260", reqLv: 285 },
+            { nameEn: "Tallahart", nameJp: "タラハート", exp: 89730912960, group: "over260", reqLv: 290 }
+        ];
+
+        const weeklyQuests = [
+            {
+                nameEn: "Blood Moon Forest", nameJp: "暁の森",
+                expTable: {
+                    250: 89915050000, 251: 89915050000, 252: 92760450000, 253: 94195450000, 254: 95640700000,
+                    260: 265200000000, 261: 266220000000, 262: 267240000000, 263: 268260000000, 264: 269280000000,
+                    265: 351390000000, 266: 352716000000, 267: 354042000000, 268: 355368000000, 269: 356694000000,
+                    270: 567000000000, 271: 569100000000, 272: 571200000000, 273: 573300000000, 274: 575400000000,
+                    275: 739200000000, 276: 741888000000, 277: 744576000000, 278: 747264000000, 279: 749952000000,
+                    280: 1061424000000, 281: 1065214800000, 282: 1069005600000, 283: 1072796400000, 284: 1076587200000,
+                    285: 1080378000000, 286: 1084168800000, 287: 1087959600000, 288: 1091750400000, 289: 1095541200000,
+                    290: 1099332000000, 291: 848556000000, 292: 851472000000, 293: 854388000000, 294: 857304000000,
+                    295: 860220000000, 296: 863136000000, 297: 866052000000, 298: 868968000000, 299: 871884000000
+                }
+            }
+        ];
+
+        const epicDungeons = [
+            {
+                id: "highmountain", nameEn: "High Mountain", nameJp: "ハイマウンテン",
+                expTable: {
+                    260: 194600000000, 261: 197400000000, 262: 200200000000, 263: 203000000000, 264: 206200000000,
+                    265: 232000000000, 266: 235200000000, 267: 238400000000, 268: 242000000000, 269: 245200000000,
+                    270: 256500000000, 271: 268700000000, 272: 272100000000, 273: 287100000000, 274: 291300000000,
+                    275: 327400000000, 276: 331500000000, 277: 336200000000, 278: 340300000000, 279: 345000000000,
+                    280: 387500000000, 281: 392800000000, 282: 397500000000, 283: 402800000000, 284: 407600000000,
+                    285: 458200000000, 286: 463500000000, 287: 469500000000, 288: 475600000000, 289: 481000000000
+                }
+            },
+            {
+                id: "angler", nameEn: "Angler Company", nameJp: "アングラーカンパニー",
+                expTable: {
+                    270: 384750000000, 271: 403050000000, 272: 408150000000, 273: 430650000000, 274: 436950000000,
+                    275: 491100000000, 276: 497250000000, 277: 504300000000, 278: 510450000000, 279: 517500000000,
+                    280: 581250000000, 281: 589200000000, 282: 596250000000, 283: 604200000000, 284: 611400000000,
+                    285: 687300000000, 286: 695250000000, 287: 704250000000, 288: 713400000000, 289: 721500000000
+                }
+            }
+        ];
+
+        // Helper to fill gaps or extend tables if needed. 
+        // Populating the rest of HighMountain/Angler from 290-299 as per request data pattern
+        for (let i = 290; i <= 299; i++) {
+            epicDungeons[0].expTable[i] = 481000000000;
+            epicDungeons[1].expTable[i] = 721500000000;
+        }
+
+        // --- Monster Park Data ---
+        const mpDailyData = [
+            { nameEn: "Road to Extinction", nameJp: "消滅の旅路", exp: 359915080, reqLv: 200 },
+            { nameEn: "Chew Chew Island", nameJp: "チューチューアイランド", exp: 1285078680, reqLv: 210 },
+            { nameEn: "Lacheln", nameJp: "レヘルン", exp: 3217660990, reqLv: 215 },
+            { nameEn: "Arcana", nameJp: "アルカナ", exp: 4707573370, reqLv: 220 },
+            { nameEn: "Moras", nameJp: "モラス", exp: 5993511040, reqLv: 225 },
+            { nameEn: "Esfera", nameJp: "エスフェラ", exp: 6919667370, reqLv: 230 },
+            { nameEn: "Sellas", nameJp: "セラス", exp: 8712814920, reqLv: 235 },
+            { nameEn: "Moonbridge", nameJp: "ムーンブリッジ", exp: 11716616500, reqLv: 240 },
+            { nameEn: "Labyrinth of Suffering", nameJp: "苦痛の迷宮", exp: 14058901000, reqLv: 245 },
+            { nameEn: "Limen", nameJp: "リメン", exp: 15552557400, reqLv: 250 },
+            { nameEn: "Cernium", nameJp: "セルニウム", exp: 37474604460, reqLv: 260 },
+            { nameEn: "Hotel Arcs", nameJp: "ホテルアルクス", exp: 44435446300, reqLv: 265 },
+            { nameEn: "Odium", nameJp: "オーディウム", exp: 52818835200, reqLv: 270 },
+            { nameEn: "Shangri-La", nameJp: "桃源郷", exp: 76639838000, reqLv: 275 },
+            { nameEn: "Arteria", nameJp: "アルテリア", exp: 107204032000, reqLv: 280 },
+            { nameEn: "Carcion", nameJp: "カルシオン", exp: 156017856000, reqLv: 285 },
+            { nameEn: "Tallahart", nameJp: "タラハート", exp: 218575316000, reqLv: 290 }
+        ];
+
+        const mpExtremeExpTable = {
+            260: 265200000000, 261: 266220000000, 262: 267240000000, 263: 268260000000, 264: 269280000000,
+            265: 351390000000, 266: 352716000000, 267: 354042000000, 268: 355368000000, 269: 356694000000,
+            270: 567000000000, 271: 569100000000, 272: 571200000000, 273: 573300000000, 274: 575400000000,
+            275: 739200000000, 276: 741888000000, 277: 744576000000, 278: 747264000000, 279: 749952000000,
+            280: 816480000000, 281: 819396000000, 282: 822312000000, 283: 825228000000, 284: 828144000000,
+            285: 831060000000, 286: 833976000000, 287: 836892000000, 288: 839808000000, 289: 842724000000,
+            290: 845640000000, 291: 855112727570, 292: 865839099577, 293: 876629865101, 294: 886247257265,
+            295: 860220000000, 296: 863136000000, 297: 866052000000, 298: 868968000000, 299: 871884000000
+        };
+
+
+        /* =========================================
+           LOGIC: Calculations & Updates
+           ========================================= */
+
+        function init() {
+            applyLanguage(currentLang);
+            updateMapSelectors();
+            renderQuestList();
+            updateRequiredExp();
+            document.querySelectorAll("input, select").forEach(el => {
+                el.addEventListener("input", calculateAll);
+                el.addEventListener("change", calculateAll);
+            });
+            calculateAll();
+        }
+
+        function updateMapSelectors() {
+            const selMain = document.getElementById("mapSelectMain");
+            const selRival = document.getElementById("mapSelectRival");
+            const selectedMain = selMain.value;
+            const selectedRival = selRival.value;
+
+            const currentLv = parseInt(document.getElementById("currentLevel").value) || 260;
+
+            // Area Level Requirements
+            // Hotel Arcs(265), Odium(270), Shangri-La(275), Arteria(280), Carcion(285), Tallahart(290)
+            const areaReqs = {
+                "Hotel Arcus": 265,
+                "Odium": 270,
+                "Shangri-La": 275,
+                "Arteria": 280,
+                "Carcion": 285,
+                "Tallahart": 290
+            };
+
+            const showNotImpl = document.getElementById("chkShowNotImpl").checked;
+            // Updated: Shangri-La, Arteria, Carcion, Tallahart are now IMPLEMENTED for Maps.
+            // Only "Unknown" remains not implemented.
+            const notImplAreas = ["Unknown"];
+
+            selMain.innerHTML = '<option value="">-- Custom / Select --</option>';
+            selRival.innerHTML = '<option value="">-- Custom / Select --</option>';
+
+            mobs.forEach(m => {
+                // Filter Check
+                const req = areaReqs[m.areaEn] || 0;
+                if (currentLv < req) return; // Skip if level too low
+
+                // Not Implemented Check
+                if (!showNotImpl && notImplAreas.includes(m.areaEn)) return;
+
+                const opt = document.createElement("option");
+                opt.value = JSON.stringify(m);
+                // Format: [Area] MapName (Lv.XXX / Pop:YY)
+                const area = currentLang === 'en' ? m.areaEn : m.area;
+                const name = currentLang === 'en' ? m.nameEn : m.name;
+                opt.textContent = `[${area}] ${name} (Lv.${m.lv} / Pop:${m.pop})`;
+
+                selMain.appendChild(opt.cloneNode(true));
+                selRival.appendChild(opt);
+            });
+
+            // Restore selection if valid, else reset
+            // Since value is JSON string, checking validity means checking if option exists
+            // But simple assignment might fail implicitly if option option doesn't exist?
+            // Actually select.value = "..." works only if option exists.
+            selMain.value = selectedMain;
+            selRival.value = selectedRival;
+
+            // If assignment failed (value became empty string), trigger loadMapData for that side?
+            // wait, loadMapData fills the inputs.
+            // If selection became invalid, inputs remain as is? User sees empty select but inputs have old data.
+            // That's acceptable or we can clear inputs. For now keep inputs.
+        }
+
+        function renderQuestList() {
+            const currentLv = parseInt(document.getElementById("currentLevel").value) || 260;
+
+            // 1. Daily Quests
+            const container = document.getElementById("dailyQuestList");
+            container.innerHTML = "";
+
+            const showNotImpl = document.getElementById("chkShowNotImpl").checked;
+            const notImplNames = ["Shangri-La", "Arteria", "Carcion", "Tallahart"];
+
+            dailyQuests.forEach((q, idx) => {
+                // Filter Not Implemented (REMOVED as requested)
+                // if (!showNotImpl && notImplNames.includes(q.nameEn)) return;
+
+                const label = currentLang === 'en' ? q.nameEn : q.nameJp;
+                const div = document.createElement("label");
+                div.className = "checkbox-item";
+                div.id = `lblDaily_${idx}`;
+
+                // Level Check
+                const isLocked = currentLv < (q.reqLv || 0);
+                if (isLocked) {
+                    div.style.opacity = "0.5";
+                    div.title = `Req Lv: ${q.reqLv}`;
+                }
+
+                div.innerHTML = `
+                    <input type="checkbox" id="dailyQ_${idx}" onchange="calculateAll()" ${isLocked ? 'disabled' : ''}>
+                    <span>${label}</span>
+                `;
+                container.appendChild(div);
+            });
+
+            // 2. Weekly Quests (Scrapyard etc - no changes needed mostly, static)
+            const wContainer = document.getElementById("weeklyQuestList");
+            wContainer.innerHTML = "";
+            weeklyQuests.forEach((q, idx) => {
+                const label = currentLang === 'en' ? q.nameEn : q.nameJp;
+                const div = document.createElement("label");
+                div.className = "checkbox-item";
+                div.innerHTML = `
+                    <input type="checkbox" id="weeklyQ_${idx}" onchange="calculateAll()">
+                    <span>${label}</span>
+                `;
+                wContainer.appendChild(div);
+            });
+
+            // 3. Epic Dungeons
+            const eContainer = document.getElementById("epicDungeonList");
+            eContainer.innerHTML = "";
+            epicDungeons.forEach((q, idx) => {
+                const label = currentLang === 'en' ? q.nameEn : q.nameJp;
+
+                const wrapper = document.createElement("div");
+                wrapper.innerHTML = `
+                <div style="margin-bottom:5px;">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="epicQ_${idx}" onchange="toggleEpicDungeon(${idx})">
+                        <span>${label}</span>
+                    </label>
+                    <div id="epicOptions_${idx}" style="display:none; margin-left:20px; gap:10px; font-size:0.8rem;">
+                        <label><input type="checkbox" id="epicBonus6x_${idx}" onchange="toggleEpicBonus(${idx}, 6)"> +Bonus(6x)</label>
+                        <label><input type="checkbox" id="epicBonus11x_${idx}" onchange="toggleEpicBonus(${idx}, 11)"> +Bonus(11x)</label>
+                    </div>
+                </div>`;
+                eContainer.appendChild(wrapper);
+            });
+
+            // 4. Update Monster Park Dropdown
+            const mpSel = document.getElementById("mpDailySelect");
+            if (mpSel) {
+                const savedVal = mpSel.value;
+                mpSel.innerHTML = `<option value="-1" data-i18n="optNone">${getText('optNone')}</option>`;
+
+                mpDailyData.forEach((d, i) => {
+                    const isLocked = currentLv < (d.reqLv || 0);
+                    // Filter Not Implemented
+                    if (!showNotImpl && notImplNames.includes(d.nameEn)) return;
+
+                    if (!isLocked) {
+                        const name = currentLang === 'en' ? d.nameEn : d.nameJp;
+                        const opt = document.createElement("option");
+                        opt.value = i;
+                        opt.textContent = name;
+                        mpSel.appendChild(opt);
+                    }
+                });
+                // Try restore value if valid
+                if (mpSel.querySelector(`option[value="${savedVal}"]`)) {
+                    mpSel.value = savedVal;
+                } else {
+                    mpSel.value = "-1";
+                }
+            }
+        }
+        /* --- I18N Handling --- */
+        function toggleLanguage() {
+            currentLang = (currentLang === 'en') ? 'ja' : 'en';
+            applyLanguage(currentLang);
+            updateMapSelectors(); // Re-render map list with new language
+            renderQuestList();    // Re-render quest list
+            calculateAll();
+        }
+        function applyLanguage(lang) {
+            const dict = dictionary[lang];
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (dict[key]) el.textContent = dict[key];
+            });
+        }
+        function getText(key) { return dictionary[currentLang][key] || key; }
+
+        function updateRequiredExp() {
+            const lvIn = document.getElementById("currentLevel");
+            let lv = parseInt(lvIn.value);
+            if (isNaN(lv)) lv = 260;
+            if (lv < 260) lv = 260; // Min supported
+            if (lv > 299) lv = 299; // Max supported in table
+
+            const req = expTableJMS[lv];
+            document.getElementById("requiredExpDisplay").value = req ? req.toLocaleString() : "-";
+            document.getElementById("requiredExpRaw").value = req || 0;
+
+            // Re-render quest list to update locks (monster park, dailies)
+            renderQuestList();
+
+            // Update Maps (Lock unavailable areas)
+            updateMapSelectors();
+        }
+
+        function loadMapData(target) {
+            const sel = document.getElementById(`mapSelect${target}`);
+            if (!sel.value) return;
+            const data = JSON.parse(sel.value);
+            document.getElementById(`mobLevel${target}`).value = data.lv;
+            document.getElementById(`baseExp${target}`).value = data.exp;
+            document.getElementById(`popCount${target}`).value = data.pop;
+            calcTheoryKills(target);
+        }
+
+        function calcTheoryKills(target) {
+            const pop = parseInt(document.getElementById(`popCount${target}`).value) || 0;
+            const theory = Math.floor(pop * 470.588);
+            document.getElementById(`killsPerHour${target}`).value = theory;
+            calculateAll();
+        }
+
+        function toggleBuff(val, checkbox) {
+            const current = parseFloat(document.getElementById("userBuffPercent").value) || 0;
+            if (checkbox.checked) {
+                document.getElementById("userBuffPercent").value = current + val;
+            } else {
+                document.getElementById("userBuffPercent").value = current - val;
+            }
+            calculateAll();
+        }
+
+        // Handles mutual exclusion for groups
+        function toggleExclusiveBuff(group, val, checkbox) {
+            if (!checkbox.checked) {
+                toggleBuff(val, checkbox); // Just subtract
+                return;
+            }
+
+            // Define groups and their possible values
+            const groups = {
+                'MVP': [50, 75],
+                'Coupon': [100, 200, 300],
+                'Potion': [10, 20],
+                'Merc': [15, 20],
+                'Zero': [10, 12],
+                'Symbol': [35, 50],
+                'Evan': [30, 34],
+                'Janus': [10, 37, 46, 67, 100],
+                'Event': [2.5, 5, 7.5, 10, 12.5, 15], // New Group
+                'Title': [10, 20]
+            };
+
+            const peers = groups[group];
+            if (peers) {
+                peers.forEach(p => {
+                    if (p !== val) {
+                        let id = "";
+                        if (group === 'Coupon') id = `buffCoupon${p}`;
+                        else if (group === 'MVP') id = `buffMVP${p}`;
+                        else if (group === 'Potion') id = `buffPotion${p}`;
+                        else if (group === 'Merc') id = `buffMerc${p}`;
+                        else if (group === 'Zero') id = `buffZero${p}`;
+                        else if (group === 'Symbol') id = `buffHS${p}`;
+                        else if (group === 'Evan') id = `buffEvan${p}`;
+                        else if (group === 'Janus') id = `buffJanus${p}`;
+                        else if (group === 'Event') {
+                            // Event IDs need special handling due to decimals in ID
+                            const safeP = p.toString().replace('.', '_');
+                            id = `buffEvent${safeP}`;
+                        }
+                        else if (group === 'Title') id = `buffTitle${p}`;
+
+                        const el = document.getElementById(id);
+                        if (el && el.checked) {
+                            el.checked = false;
+                            toggleBuff(p, el); // Subtract peer value
+                        }
+                    }
+                });
+            }
+
+            toggleBuff(val, checkbox); // Add new value
+        }
+
+        function checkHighEfficacyBuffs() {
+            // Check higher value exclusive buffs
+            const highExclusive = ['buffCoupon300', 'buffMVP75', 'buffPotion20', 'buffMerc20', 'buffZero12', 'buffHS50', 'buffEvan34', 'buffJanus100', 'buffTitle20'];
+
+            highExclusive.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && !el.checked) {
+                    el.click(); // Click to trigger exclusive logic
+                }
+            });
+
+            // Check non-exclusive high efficacy ones
+            const highStackable = [
+                'buffDice6', 'buffLegion10', 'buffArtifact12', 'buffHyper10',
+                'buffSpirit30', 'buffRingBlue', 'buffRingBlack', 'buffRing3',
+                'buffVIP', 'buffLounge', 'buffEXGold'
+            ];
+
+            highStackable.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && !el.checked) {
+                    el.click(); // Click to trigger onchange and toggleBuff
+                }
+            });
+        }
+
+        function calculateAll() {
+            calcSide("Main");
+            calcSide("Rival");
+            calcSide("Main");
+            calcSide("Rival");
+            compareResults();
+            runSimulation();
+        }
+
+        function getQuestExp() {
+            const lv = parseInt(document.getElementById("currentLevel").value) || 260;
+            let dailyTotal = 0;
+            let weeklyTotal = 0;
+
+            // Daily Quests
+            dailyQuests.forEach((q, idx) => {
+                const el = document.getElementById(`dailyQ_${idx}`);
+                if (el && el.checked) {
+                    dailyTotal += q.exp;
+                }
+            });
+
+            // Weekly Quests
+            weeklyQuests.forEach((q, idx) => {
+                const el = document.getElementById(`weeklyQ_${idx}`);
+                if (el && el.checked) {
+                    const baseExp = q.expTable ? (q.expTable[lv] || 0) : 0;
+                    weeklyTotal += baseExp;
+                }
+            });
+
+            // Monster Park (Daily)
+            const mpSel = document.getElementById("mpDailySelect");
+            const mpCnt = document.getElementById("mpDailyCount");
+            const mpMultInput = document.getElementById("mpDailyMult");
+            const mpSunCheck = document.getElementById("mpDailySunday");
+
+            if (mpSel && mpCnt) {
+                const idx = parseInt(mpSel.value);
+                const count = parseInt(mpCnt.value);
+
+                let mult = parseFloat(mpMultInput?.value) || 1.0;
+                // Sunday Bonus: +50% on Sunday (1/7 days). 
+                // Avg Multiplier = ((1.0 * 6) + (1.5 * 1)) / 7 = 7.5 / 7 = 1.071
+                if (mpSunCheck && mpSunCheck.checked) {
+                    mult += 0.0714;
+                }
+
+                if (idx !== -1 && !isNaN(idx) && count > 0 && mpDailyData[idx]) {
+                    dailyTotal += (mpDailyData[idx].exp * count * mult);
+                }
+            }
+
+            // Extreme Monster Park (Weekly)
+            const mpEx = document.getElementById("weeklyDiffMP");
+            const mpExMultInput = document.getElementById("mpExtremeMult");
+            const mpExSunCheck = document.getElementById("mpExtremeSunday");
+
+            if (mpEx && mpEx.checked) {
+                const exExp = mpExtremeExpTable[lv] || (lv >= 299 ? mpExtremeExpTable[299] : 0);
+
+                let mult = parseFloat(mpExMultInput?.value) || 1.0;
+
+                weeklyTotal += (exExp * mult);
+            }
+
+            // Epic Dungeon Logic
+            epicDungeons.forEach((q, idx) => {
+                const mainEl = document.getElementById(`epicQ_${idx}`);
+                if (mainEl && mainEl.checked) {
+                    let baseExp = q.expTable[lv] || (lv >= 299 ? q.expTable[299] : 0);
+                    let multiplier = 1;
+
+                    const b6 = document.getElementById(`epicBonus6x_${idx}`);
+                    const b11 = document.getElementById(`epicBonus11x_${idx}`);
+
+                    if (b6 && b6.checked) multiplier = 6;
+                    if (b11 && b11.checked) multiplier = 11;
+
+                    weeklyTotal += (baseExp * multiplier);
+                }
+            });
+
+            // Update UI
+            document.getElementById("dailyQuestTotal").textContent = dailyTotal.toLocaleString();
+            document.getElementById("weeklyQuestTotal").textContent = weeklyTotal.toLocaleString();
+
+            const weeklyAvg = Math.floor(weeklyTotal / 7);
+            document.getElementById("weeklyQuestDailyAvg").textContent = weeklyAvg.toLocaleString();
+
+            return { daily: dailyTotal, weeklyAvg: weeklyAvg };
+        }
+
+
+
+
+        function calcSide(target) {
+            const charLv = parseInt(document.getElementById("currentLevel").value);
+            const mobLv = parseInt(document.getElementById(`mobLevel${target}`).value);
+            const baseExp = parseInt(document.getElementById(`baseExp${target}`).value) || 0;
+            const kills = parseInt(document.getElementById(`killsPerHour${target}`).value) || 0;
+            const buffPct = parseFloat(document.getElementById("userBuffPercent").value) || 0;
+            const burning = parseInt(document.getElementById(`burning${target}`).value) || 0;
+            // Treasure Box Logic
+            // If checked, use value (Start 1.0, step 0.1). If unchecked, multiplier is 1.0 (no effect).
+            const tbCheck = document.getElementById("buffTreasureBox");
+            const tbVal = document.getElementById("treasureBoxVal");
+            const treasureBoxMult = (tbCheck && tbCheck.checked) ? (parseFloat(tbVal?.value) || 1.0) : 1.0;
+
+            // Level Diff Bonus Logic (Updated)
+            let lvBonus = 1.0;
+            const diff = Math.abs(charLv - mobLv);
+            if (diff <= 1) {
+                lvBonus = 1.2;
+            } else if (diff <= 5) {
+                lvBonus = 1.1;
+            } else if (diff <= 9) {
+                lvBonus = 1.05;
+            } else if (diff >= 20) {
+                lvBonus = 0.7;
+            } else {
+                lvBonus = 1.0;
+            }
+
+            document.getElementById(`levelBonus${target}`).textContent = `${getText('bonus')}: ${lvBonus}x`;
+
+            // Update displays
+            const baseWithBonus = Math.floor(baseExp * lvBonus);
+            document.getElementById(`baseExpWithBonus${target}`).textContent = `Total Base: ${baseWithBonus.toLocaleString()}`;
+
+            const totalMultiplier = 1 + ((buffPct + burning) / 100);
+
+            // Final EXP per mob = (Base * LevelBonus) * Multipliers * TreasureBox
+            const expPerMob = baseWithBonus * totalMultiplier * treasureBoxMult;
+
+            const expPerHour = expPerMob * kills;
+
+            // Quest Logic inclusion
+            const questData = getQuestExp();
+
+            // Breakdown Update
+            const dailyH = parseInt(document.getElementById("dailyHours").value) || 0;
+            const dailyM = parseInt(document.getElementById("dailyMinutes").value) || 0;
+            const dailyTime = dailyH + (dailyM / 60);
+
+            const dailyGrindExp = expPerHour * dailyTime;
+
+            const totalDailyExp = dailyGrindExp + questData.daily + questData.weeklyAvg;
+
+            document.getElementById(`breakHunt${target}`).textContent = Math.floor(expPerHour).toLocaleString();
+            document.getElementById(`breakDaily${target}`).textContent = questData.daily.toLocaleString();
+            document.getElementById(`breakWeekly${target}`).textContent = questData.weeklyAvg.toLocaleString();
+
+            document.getElementById(`resExpHr${target}`).textContent = Math.floor(totalDailyExp).toLocaleString();
+            document.getElementById(`resExpHr${target}`).dataset.value = totalDailyExp;
+
+            const requiredTotal = parseInt(document.getElementById("requiredExpRaw").value);
+            // Current EXP = Req * (Percent / 100)
+            const currentPct = parseFloat(document.getElementById("currentExpPercent").value) || 0;
+            const currentExp = requiredTotal * (currentPct / 100);
+            const remainingExp = requiredTotal - currentExp;
+
+            if (remainingExp <= 0) {
+                document.getElementById(`resHours${target}`).textContent = getText('levelUp');
+                document.getElementById(`resDays${target}`).textContent = "-";
+                document.getElementById(`resDate${target}`).textContent = getText('now');
+                return;
+            }
+
+            if (totalDailyExp > 0) {
+                const daysNeeded = remainingExp / totalDailyExp;
+                const reqGrindHours = daysNeeded * dailyTime;
+
+                document.getElementById(`resDays${target}`).textContent = Math.ceil(daysNeeded) + " days";
+                // Show "Required Grind Hours"
+                const dispHours = reqGrindHours.toFixed(2) + " h";
+                document.getElementById(`resHours${target}`).textContent = dispHours;
+                document.getElementById(`resHours${target}`).dataset.value = reqGrindHours;
+
+                const targetDate = new Date();
+                targetDate.setDate(targetDate.getDate() + Math.ceil(daysNeeded));
+                document.getElementById(`resDate${target}`).textContent = targetDate.toLocaleDateString();
+            } else {
+                document.getElementById(`resDays${target}`).textContent = "∞";
+                document.getElementById(`resHours${target}`).textContent = "∞";
+                document.getElementById(`resDate${target}`).textContent = getText('never');
+            }
+        }
+
+        function toggleManual() {
+            const modal = document.getElementById("manualModal");
+            if (modal.style.display === "none" || modal.style.display === "") {
+                // Populate content again just in case (though applyLanguage should handle it)
+                const text = dictionary[currentLang].manualText;
+                document.getElementById("manualContent").innerHTML = text;
+                modal.style.display = "flex";
+            } else {
+                modal.style.display = "none";
+            }
+        }
+
+        // --- Bulk Actions & Epic Logic ---
+        function bulkCheckDaily(mode) {
+            const currentLv = parseInt(document.getElementById("currentLevel").value) || 260;
+            dailyQuests.forEach((q, idx) => {
+                const el = document.getElementById(`dailyQ_${idx}`);
+                if (!el) return;
+
+                // Respect level requirement
+                const req = q.reqLv || 0;
+                const canDo = currentLv >= req;
+
+                if (mode === 'clear') {
+                    el.checked = false;
+                } else if (mode === 'under260') {
+                    if (q.group === 'under260') el.checked = true;
+                } else if (mode === 'over260') {
+                    // Only check if group matches AND level is sufficient
+                    if (q.group === 'over260' && canDo) el.checked = true;
+                }
+            });
+            calculateAll();
+        }
+
+        function toggleEpicDungeon(idx) {
+            // Exclusivity: If I check this one, uncheck others
+            const me = document.getElementById(`epicQ_${idx}`);
+            if (me.checked) {
+                epicDungeons.forEach((_, otherIdx) => {
+                    if (otherIdx !== idx) {
+                        const otherMain = document.getElementById(`epicQ_${otherIdx}`);
+                        const otherOpts = document.getElementById(`epicOptions_${otherIdx}`);
+                        if (otherMain) otherMain.checked = false;
+                        if (otherOpts) otherOpts.style.display = 'none';
+                        // also clear bonuses?
+                        const b6 = document.getElementById(`epicBonus6x_${otherIdx}`);
+                        const b11 = document.getElementById(`epicBonus11x_${otherIdx}`);
+                        if (b6) b6.checked = false;
+                        if (b11) b11.checked = false;
+                    }
+                });
+                // Show my options
+                document.getElementById(`epicOptions_${idx}`).style.display = 'flex';
+            } else {
+                // Hide my options
+                document.getElementById(`epicOptions_${idx}`).style.display = 'none';
+                // clear bonuses
+                document.getElementById(`epicBonus6x_${idx}`).checked = false;
+                document.getElementById(`epicBonus11x_${idx}`).checked = false;
+            }
+            calculateAll();
+        }
+
+        function toggleEpicBonus(qIdx, factor) {
+            const me = document.getElementById(`epicBonus${factor}x_${qIdx}`);
+            if (me.checked) {
+                // Uncheck peer
+                const peerFactor = (factor === 6) ? 11 : 6;
+                const peer = document.getElementById(`epicBonus${peerFactor}x_${qIdx}`);
+                if (peer) peer.checked = false;
+            }
+            calculateAll();
+        }
+
+        function runSimulation() {
+            const currentLv = parseInt(document.getElementById("currentLevel").value) || 260;
+            let targetLv = parseInt(document.getElementById("targetLevel").value);
+            const panel = document.getElementById("simulationResultsPanel");
+            const tableBody = document.getElementById("simulationTableBody");
+
+            if (isNaN(targetLv) || targetLv <= currentLv) {
+                // Try to catch edge case where user might have just typed target
+                if (!isNaN(targetLv) && targetLv > 260 && currentLv >= targetLv) {
+                    // Logic correct, just return
+                }
+                panel.style.display = "none";
+                return;
+            }
+            panel.style.display = "block";
+            tableBody.innerHTML = "";
+
+            // Gather Constants from "Main" configuration
+            // Note: We use Main's Kills/Hr, DailyTime, Multipliers as the "User Std"
+            // But we pick the BEST MAP for base exp at each level.
+
+            const dailyH = parseInt(document.getElementById("dailyHours").value) || 0;
+            const dailyM = parseInt(document.getElementById("dailyMinutes").value) || 0;
+            const dailyTime = dailyH + (dailyM / 60);
+
+            // Calculate User's Kill Efficiency based on Main Map input
+            const mainPop = parseInt(document.getElementById("popCountMain").value) || 30; // Default 30 if custom/missing
+            const mainKillsHr = parseInt(document.getElementById("killsPerHourMain").value) || 0;
+            // Theory Max per Pop ~ 470.588 kills/hr (3600s / 7.65s respawn)
+            const theoryPerPop = 470.588;
+            const mainTheoryWait = mainPop * theoryPerPop;
+            let efficiency = 1.0;
+
+            if (mainTheoryWait > 0) {
+                if (mainKillsHr > 0) {
+                    efficiency = mainKillsHr / mainTheoryWait;
+                    // Cap efficiency? Maybe user is super optimized (instaspawn). 
+                    // Let's cap at 1.5 just in case inputs are weird, but trust user generally.
+                    if (efficiency > 2.0) efficiency = 2.0;
+                } else {
+                    // Fallback if user hasn't input kills yet: Assume 1.0 (100%) efficiency (Max Theory)
+                    efficiency = 1.0;
+                }
+            } else {
+                // If main pop is 0 (shouldn't happen with default), assume standard efficiency 1.0?
+                efficiency = 1.0;
+            }
+
+
+            const userBuff = parseFloat(document.getElementById("userBuffPercent").value) || 0;
+            const burning = parseInt(document.getElementById("burningMain").value) || 0;
+            // Treasure Box Logic
+            const tbCheck = document.getElementById("buffTreasureBox");
+            const tbVal = document.getElementById("treasureBoxVal");
+            const treasureBoxMult = (tbCheck && tbCheck.checked) ? (parseFloat(tbVal?.value) || 1.0) : 1.0;
+
+            const totalMult = (1 + ((userBuff + burning) / 100)) * treasureBoxMult;
+
+            // MP Settings
+            const mpCount = parseInt(document.getElementById("mpDailyCount").value) || 0;
+            const mpMult = parseFloat(document.getElementById("mpDailyMult").value) || 1;
+            // Manual Logic uses Additive: mult += 0.0714
+            const mpSunAdd = document.getElementById("mpDailySunday").checked ? 0.0714 : 0;
+
+            // EX MP Settings
+            const doExMP = document.getElementById("weeklyDiffMP").checked;
+            const mpExMult = parseFloat(document.getElementById("mpExtremeMult").value) || 1;
+
+            // Epic Dungeon Settings
+            let epicWeekly = 0;
+            epicDungeons.forEach((q, idx) => {
+                if (document.getElementById(`epicQ_${idx}`).checked) {
+                    // We calculate this per level inside loop, just note if enabled
+                }
+            });
+
+            let totalAccDays = 0;
+            let currentExpPct = parseFloat(document.getElementById("currentExpPercent").value) || 0;
+            // Subtract current accumulated EXP from first level requirement?
+            // Actually, simplest is: Calculate Time for (L -> L+1).
+            // For the *first* level, subtract (Req * Pct/100) from needed.
+
+            // Iterate levels
+            for (let lv = currentLv; lv < targetLv; lv++) {
+                // 1. Find Best Map
+                let bestMob = null;
+                let maxHourlyExp = 0; // Changed from maxMobExp to total hourly output
+                let effBase = 0; // Base exp * lvBonus for the best mob
+
+                // Define filtering logic for Simulation
+                // 1. Area Req Levels (same as Map Select)
+                const areaReqs = {
+                    "Hotel Arcus": 265, "Odium": 270, "Shangri-La": 275,
+                    "Arteria": 280, "Carcion": 285, "Tallahart": 290
+                };
+                // 2. Not Implemented lists for Sim
+                const showNotImpl = document.getElementById("chkShowNotImpl").checked;
+                const notImplAreasSim = ["Unknown"];
+                // For MP, user implies Shangri-La etc are NOT visible unless checked/implemented?
+                // User said "Monster Park choice... do not display" in Step 341.
+                // So MP follows the stricter list.
+                const notImplNamesMP = ["Shangri-La", "Arteria", "Carcion", "Tallahart"];
+
+                mobs.forEach(m => {
+                    // Level Gate: Must meet area requirement
+                    const req = areaReqs[m.areaEn] || 0;
+                    if (lv < req) return;
+
+                    // Not Implemented Check
+                    if (!showNotImpl && notImplAreasSim.includes(m.areaEn)) return;
+
+                    // Level Diff Bonus Logic
+                    let lvBonus = 1.0;
+                    const diff = Math.abs(lv - m.lv);
+                    if (diff <= 1) lvBonus = 1.2;
+                    else if (diff <= 5) lvBonus = 1.1;
+                    else if (diff <= 9) lvBonus = 1.05;
+                    else if (diff >= 20) lvBonus = 0.7;
+
+                    // Calculate Expected Kills for THIS map based on Pop & Efficiency
+                    const mapTheory = m.pop * theoryPerPop;
+                    // Use Math.round to match manual logic (integer kills)
+                    const mapKills = Math.round(mapTheory * efficiency);
+
+                    // Total Hourly Base Exp (before multipliers)
+                    // We compare raw base exp * kills * bonus
+                    const currentEffBase = (m.exp * lvBonus);
+                    const eff = currentEffBase * mapKills;
+
+                    if (eff > maxHourlyExp) {
+                        maxHourlyExp = eff;
+                        bestMob = m;
+                    }
+                });
+
+                // Hunt EXP
+                // maxHourlyExp is (Base * Bonus * Kills/hr). 
+                // We need to apply Total Multiplier (Buffs etc).
+                const huntExpDaily = maxHourlyExp * dailyTime * totalMult;
+
+                // 2. Best MP (Highest available)
+                // Filter where reqLv <= lv
+                let bestMP = null;
+                for (let i = mpDailyData.length - 1; i >= 0; i--) {
+                    if (mpDailyData[i].reqLv <= lv) {
+                        // Extra Check: Not Implemented
+                        // If area is in notImplNamesMP and showNotImpl is false, skip
+                        if (!showNotImpl && notImplNamesMP.includes(mpDailyData[i].nameEn)) continue;
+
+                        bestMP = mpDailyData[i];
+                        break;
+                    }
+                }
+                const mpExpDaily = bestMP ? (bestMP.exp * mpCount * (mpMult + mpSunAdd)) : 0;
+
+                // 3. All Daily Quests (All available)
+                let questExpDaily = 0;
+                let questCount = 0;
+                dailyQuests.forEach(q => {
+                    if (q.reqLv <= lv) {
+                        questExpDaily += q.exp;
+                        questCount++;
+                    }
+                });
+
+                // 4. Weekly (Avg)
+                let weeklyAvg = 0;
+                // EX MP
+                if (doExMP && lv >= 260) {
+                    const exVal = mpExtremeExpTable[lv] || (lv >= 299 ? mpExtremeExpTable[299] : 0);
+                    weeklyAvg += (exVal * mpExMult) / 7;
+                }
+                // Epic Dungeon
+                epicDungeons.forEach((q, idx) => {
+                    const el = document.getElementById(`epicQ_${idx}`);
+                    if (el && el.checked) {
+                        const val = q.expTable[lv] || (lv >= 299 ? q.expTable[299] : 0);
+                        let m = 1;
+                        if (document.getElementById(`epicBonus6x_${idx}`).checked) m = 6;
+                        if (document.getElementById(`epicBonus11x_${idx}`).checked) m = 11;
+                        weeklyAvg += (val * m) / 7;
+                    }
+                });
+
+                const totalDaily = huntExpDaily + mpExpDaily + questExpDaily + weeklyAvg;
+
+                // Req Exp
+                const req = expTableJMS[lv];
+                let needed = req;
+
+                // If first level, account for current progress
+                if (lv === currentLv) {
+                    const done = req * (currentExpPct / 100);
+                    needed -= done;
+                }
+
+                const days = totalDaily > 0 ? (needed / totalDaily) : 9999;
+                totalAccDays += days;
+
+                // Row
+                const row = document.createElement("tr");
+                row.style.borderBottom = "1px solid #333";
+
+                const mapName = bestMob ? (currentLang === 'en' ? bestMob.nameEn : bestMob.name) : '-';
+                const mpName = bestMP ? (currentLang === 'en' ? bestMP.nameEn : bestMP.nameJp) : '-';
+
+                row.innerHTML = `
+                    <td style="padding:5px; color:#ddd;">${lv}</td>
+                    <td style="padding:5px; color:#888;">
+                        <div style="color:#aaa;">Map: ${mapName}</div>
+                        <div style="font-size:0.75rem; color:#666;">MP: ${mpName}</div>
+                    </td>
+                    <td style="padding:5px; text-align:right; color:#ddd;">${Math.floor(totalDaily).toLocaleString()}</td>
+                    <td style="padding:5px; text-align:right; color:var(--accent-gold);">${days.toFixed(1)}</td>
+                    <td style="padding:5px; text-align:right; color:var(--accent-red-light);">${totalAccDays.toFixed(1)}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+            document.getElementById("simTotalDays").textContent = totalAccDays.toFixed(1) + " Days";
+        }
+
+        function compareResults() {
+            const mainHours = parseFloat(document.getElementById("resHoursMain").dataset.value) || 0;
+            const rivalHours = parseFloat(document.getElementById("resHoursRival").dataset.value) || 0;
+            const verdict = document.getElementById("verdictText");
+
+            if (mainHours <= 0 || rivalHours <= 0) {
+                verdict.innerHTML = getText('verdictWait');
+                verdict.className = "result-value";
+                return;
+            }
+
+            const diff = Math.abs(mainHours - rivalHours).toFixed(2);
+            if (Math.abs(mainHours - rivalHours) < 0.01) {
+                verdict.className = "result-value";
+                verdict.innerHTML = getText('verdictDraw');
+            } else if (mainHours < rivalHours) {
+                verdict.className = "result-value diff-win";
+                verdict.innerHTML = getText('verdictMainWin').replace('{diff}', diff);
+            } else {
+                verdict.className = "result-value diff-lose";
+                verdict.innerHTML = getText('verdictRivalWin').replace('{diff}', diff);
+            }
+        }
+
+        function saveData(slot) {
+            const data = {};
+            document.querySelectorAll("input, select").forEach(el => {
+                if (el.type === 'checkbox') data[el.id] = el.checked;
+                else data[el.id] = el.value;
+            });
+            localStorage.setItem(`shastaPlanner_slot${slot}`, JSON.stringify(data));
+            const timeStr = new Date().toLocaleTimeString();
+            const msg = document.getElementById("save-message");
+            msg.textContent = getText('msgSaved').replace('{slot}', slot).replace('{time}', timeStr);
+            setTimeout(() => msg.textContent = "", 3000);
+        }
+
+        function loadData(slot) {
+            const json = localStorage.getItem(`shastaPlanner_slot${slot}`);
+            if (!json) {
+                alert("No data in Slot " + slot);
+                return;
+            }
+            const data = JSON.parse(json);
+            for (const [id, val] of Object.entries(data)) {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (el.type === 'checkbox') el.checked = val;
+                    else el.value = val;
+                }
+            }
+            updateRequiredExp();
+            document.getElementById('burningMain').oninput();
+            document.getElementById('burningRival').oninput();
+            calculateAll();
+            const msg = document.getElementById("save-message");
+            msg.textContent = getText('msgLoaded').replace('{slot}', slot);
+            setTimeout(() => msg.textContent = "", 3000);
+        }
+
+        window.onload = init;
+    </script>
+
+</body>
+
+</html>
