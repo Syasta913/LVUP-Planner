@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shasta's MapleStory Planner (JMS Edition)</title>
+    <title>Syasta's MapleStory Planner</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c5a059' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'%3E%3C/path%3E%3Cpath d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'%3E%3C/path%3E%3C/svg%3E">
     <style>
         :root {
             --bg-color: #1a1a1d;
@@ -462,29 +464,65 @@
         <div class="panel">
             <span class="panel-title" data-i18n="buffsTitle">Buffs & Multipliers</span>
 
-            <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                <div style="flex: 1;">
-                    <label data-i18n="lblTotalBuff">Total Bonus EXP %</label>
-                    <input type="number" id="userBuffPercent" value="0" placeholder="Example: 300">
-                </div>
-                <div style="flex: 1;">
-                    <label data-i18n="lblOtherMult">Other Multipliers</label>
-                    <!-- Replaced Rune with Treasure Box (Placeholder) -->
-                    <!-- Replaced Rune with Treasure Box -->
-                    <div style="display:flex; align-items:center; height:32px; gap:10px;">
-                        <label class="checkbox-item" style="margin-bottom:0;">
-                            <input type="checkbox" id="buffTreasureBox" onchange="calculateAll()">
-                            <span data-i18n="lblTreasureBox">Treasure Box</span>
-                        </label>
-                        <input type="number" id="treasureBoxVal" value="1.0" step="0.1" min="1.0"
-                            style="width:60px; padding:2px; height:24px;" onchange="calculateAll()">
+            <!-- Increased gap to 30px -->
+            <div class="input-group" style="display: flex; align-items: stretch; gap: 30px; margin-bottom: 15px;">
 
-                        <!-- VIP Booster Checkbox (UI Only) -->
-                        <div style="width:1px; height:20px; background:#444; margin:0 5px;"></div>
-                        <label class="checkbox-item" style="margin-bottom:0;">
-                            <input type="checkbox" id="buffVIPBooster" onchange="calculateAll()">
-                            <span data-i18n="lblVIPBooster">VIP Booster</span>
-                        </label>
+                <!-- Total Bonus EXP Frame -->
+                <div
+                    style="width: 160px; border: 2px solid silver; padding: 10px; border-radius: 8px; background:rgba(255,255,255,0.03);">
+                    <div
+                        style="border-bottom: 2px solid var(--accent-gold); margin-bottom: 8px; padding-bottom: 2px; text-align:center;">
+                        <label data-i18n="lblTotalBuff"
+                            style="font-weight:bold; color:var(--accent-gold); display:block; font-size:0.9rem;">Total
+                            Bonus EXP %</label>
+                    </div>
+                    <input type="number" id="userBuffPercent" value="0" placeholder="300"
+                        style="width: 100%; font-weight:bold; text-align:center; font-size:1.1rem; height:36px;">
+                </div>
+
+                <!-- Other Specials Frame -->
+                <div
+                    style="flex: 1; border: 2px solid silver; padding: 10px; border-radius: 8px; background:rgba(255,255,255,0.03);">
+                    <label data-i18n="lblOtherMult"
+                        style="font-weight:bold; color:#ccc; display:block; margin-bottom:8px; border-bottom:1px solid #555; padding-bottom:2px;">Other
+                        Specials</label>
+
+                    <div style="display:flex; align-items:flex-end; gap:15px; flex-wrap:wrap;">
+                        <!-- Treasure Box Group -->
+                        <div
+                            style="border:1px solid #444; border-radius:4px; padding:5px; display:flex; align-items:flex-end; gap:10px; background:rgba(0,0,0,0.2);">
+                            <div style="display:flex; flex-direction:column;">
+                                <span style="font-size:0.65rem; color:#aaa; margin-bottom:2px;"
+                                    data-i18n="noteTreasure">1 Box / 30 mins</span>
+                                <label class="checkbox-item" style="margin-bottom:0;">
+                                    <input type="checkbox" id="buffTreasureBox" onchange="calculateAll()">
+                                    <span data-i18n="lblTreasureBox">Treasure Box</span>
+                                </label>
+                            </div>
+
+                            <div style="display:flex; flex-direction:column; align-items:center;">
+                                <span style="font-size:0.7rem; color:#aaa; margin-bottom:2px;"
+                                    data-i18n="lblMultiplier">Multiplier</span>
+                                <input type="number" id="treasureBoxVal" value="1.0" step="0.1" min="1.0"
+                                    style="width:60px; padding:2px; height:24px; text-align:center;"
+                                    onchange="calculateAll()">
+                            </div>
+                        </div>
+
+                        <!-- VIP Booster Select -->
+                        <div style="display:flex; flex-direction:column; gap:2px;">
+                            <label style="font-size:0.75rem; color:var(--accent-gold);" data-i18n="lblVIPBooster">VIP
+                                Booster</label>
+                            <select id="selVIPBooster" onchange="calculateAll()"
+                                style="padding:2px; font-size:0.8rem; width:320px; height:24px;">
+                                <option value="none" data-i18n="optNone">None</option>
+                                <option value="spam" data-i18n="optVIPSpam">Spam</option>
+                                <option value="rune" data-i18n="optVIPRune">Rune</option>
+                                <option value="bless" data-i18n="optVIPBless">EXP Rune</option>
+                                <option value="hyper_bless" data-i18n="optVIPHyperBless">VIP/Hyper Booster (Bless Rune)
+                                </option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -494,14 +532,14 @@
                 <div class="buff-group">
                     <span class="buff-group-title" data-i18n="grpCoupons">Coupons</span>
                     <div class="checkbox-group">
-                        <label class="checkbox-item"><input type="checkbox" id="buffCoupon100"
-                                onchange="toggleExclusiveBuff('Coupon', 100, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffCoupon100" data-val="100"
+                                data-group="Coupon" onchange="onBuffChange(this)"> <span
                                 data-i18n="buff2x">2x</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffCoupon200"
-                                onchange="toggleExclusiveBuff('Coupon', 200, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffCoupon200" data-val="200"
+                                data-group="Coupon" onchange="onBuffChange(this)"> <span
                                 data-i18n="buff3x">3x</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffCoupon300"
-                                onchange="toggleExclusiveBuff('Coupon', 300, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffCoupon300" data-val="300"
+                                data-group="Coupon" onchange="onBuffChange(this)"> <span
                                 data-i18n="buff4x">4x</span></label>
                     </div>
                 </div>
@@ -510,10 +548,10 @@
                 <div class="buff-group">
                     <span class="buff-group-title" data-i18n="grpMVP">MVP</span>
                     <div class="checkbox-group">
-                        <label class="checkbox-item"><input type="checkbox" id="buffMVP50"
-                                onchange="toggleExclusiveBuff('MVP', 50, this)"> 50%</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffMVP75"
-                                onchange="toggleExclusiveBuff('MVP', 75, this)"> 75%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffMVP50" data-val="50"
+                                data-group="MVP" onchange="onBuffChange(this)"> 50%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffMVP75" data-val="75"
+                                data-group="MVP" onchange="onBuffChange(this)"> 75%</label>
                     </div>
                 </div>
 
@@ -521,54 +559,55 @@
                 <div class="buff-group">
                     <span class="buff-group-title" data-i18n="grpPotion">Potions / Special</span>
                     <div class="checkbox-group">
-                        <label class="checkbox-item"><input type="checkbox" id="buffPotion10"
-                                onchange="toggleExclusiveBuff('Potion', 10, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffPotion10" data-val="10"
+                                data-group="Potion" onchange="onBuffChange(this)"> <span
                                 data-i18n="buffPot10">EXP(10%)</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffPotion20"
-                                onchange="toggleExclusiveBuff('Potion', 20, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffPotion20" data-val="20"
+                                data-group="Potion" onchange="onBuffChange(this)"> <span
                                 data-i18n="buffPot20">Wealth(20%)</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffEXGold"
-                                onchange="toggleBuff(10, this)"> EX
-                            Gold</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffLounge"
-                                onchange="toggleBuff(25, this)" style="border-color:#c5a059"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffEXGold" data-val="10"
+                                onchange="onBuffChange(this)"> EX Gold</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffLounge" data-val="25"
+                                onchange="onBuffChange(this)" style="border-color:#c5a059"> <span
                                 data-i18n="buffLounge">Lounge(25%)</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffVIP" onchange="toggleBuff(15, this)"
-                                style="border-color:#c5a059"> <span data-i18n="buffVIP">VIP(15%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffVIP" data-val="15"
+                                onchange="onBuffChange(this)" style="border-color:#c5a059"> <span
+                                data-i18n="buffVIP">VIP(15%)</span></label>
                     </div>
                 </div>
 
-                <!-- Event Stats (New) -->
+                <!-- Event Stats -->
+                <!-- Event Stats -->
                 <div class="buff-group">
                     <span class="buff-group-title" data-i18n="grpEvent">Event Stats</span>
                     <div class="checkbox-group">
-                        <label class="checkbox-item"><input type="checkbox" id="buffEvent2_5"
-                                onchange="toggleExclusiveBuff('Event', 2.5, this)"> 2.5%</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffEvent5"
-                                onchange="toggleExclusiveBuff('Event', 5, this)"> 5%</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffEvent7_5"
-                                onchange="toggleExclusiveBuff('Event', 7.5, this)"> 7.5%</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffEvent10"
-                                onchange="toggleExclusiveBuff('Event', 10, this)"> 10%</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffEvent12_5"
-                                onchange="toggleExclusiveBuff('Event', 12.5, this)"> 12.5%</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffEvent15"
-                                onchange="toggleExclusiveBuff('Event', 15, this)"> 15%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent2_5" data-val="2.5"
+                                data-group="Event" onchange="onBuffChange(this)"> 2.5%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent5" data-val="5"
+                                data-group="Event" onchange="onBuffChange(this)"> 5%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent7_5" data-val="7.5"
+                                data-group="Event" onchange="onBuffChange(this)"> 7.5%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent10" data-val="10"
+                                data-group="Event" onchange="onBuffChange(this)"> 10%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent12_5" data-val="12.5"
+                                data-group="Event" onchange="onBuffChange(this)"> 12.5%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvent15" data-val="15"
+                                data-group="Event" onchange="onBuffChange(this)"> 15%</label>
                     </div>
                 </div>
 
-                <!-- Skills (Was Holy Symbol) -->
+                <!-- Skills -->
                 <div class="buff-group">
                     <span class="buff-group-title" data-i18n="grpSkill">Skill</span>
                     <div class="checkbox-group">
-                        <label class="checkbox-item"><input type="checkbox" id="buffHS50"
-                                onchange="toggleExclusiveBuff('Symbol', 50, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffHS50" data-val="50"
+                                data-group="Symbol" onchange="onBuffChange(this)"> <span
                                 data-i18n="buffHS50">HS(50%)</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffHS35"
-                                onchange="toggleExclusiveBuff('Symbol', 35, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffHS35" data-val="35"
+                                data-group="Symbol" onchange="onBuffChange(this)"> <span
                                 data-i18n="buffHS35">DHS(35%)</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffDice6"
-                                onchange="toggleBuff(30, this)"> <span data-i18n="buffDice6">Dice6(30%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffDice6" data-val="30"
+                                onchange="onBuffChange(this)"> <span data-i18n="buffDice6">Dice6(30%)</span></label>
                     </div>
                 </div>
 
@@ -576,25 +615,25 @@
                 <div class="buff-group">
                     <span class="buff-group-title" data-i18n="grpStats">Legion / Hyper</span>
                     <div class="checkbox-group">
-                        <label class="checkbox-item"><input type="checkbox" id="buffLegion10"
-                                onchange="toggleBuff(10, this)"> <span
-                                data-i18n="buffLegion10">Occupy(10%)</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffArtifact12"
-                                onchange="toggleBuff(12, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffLegion10" data-val="10"
+                                onchange="onBuffChange(this)"> <span data-i18n="buffLegion10">Occupy(10%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffArtifact12" data-val="12"
+                                onchange="onBuffChange(this)"> <span
                                 data-i18n="buffArtifact12">Artifact(12%)</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffHyper10"
-                                onchange="toggleBuff(10, this)"> <span data-i18n="buffHyper10">Hyper(10%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffHyper10" data-val="10"
+                                onchange="onBuffChange(this)"> <span data-i18n="buffHyper10">Hyper(10%)</span></label>
                     </div>
                 </div>
 
                 <!-- Title -->
+                <!-- Title -->
                 <div class="buff-group">
                     <span class="buff-group-title" data-i18n="grpTitle">Title</span>
                     <div class="checkbox-group">
-                        <label class="checkbox-item"><input type="checkbox" id="buffTitle10"
-                                onchange="toggleExclusiveBuff('Title', 10, this)"> 10%</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffTitle20"
-                                onchange="toggleExclusiveBuff('Title', 20, this)"> 20%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffTitle10" data-val="10"
+                                data-group="Title" onchange="onBuffChange(this)"> 10%</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffTitle20" data-val="20"
+                                data-group="Title" onchange="onBuffChange(this)"> 20%</label>
                     </div>
                 </div>
 
@@ -602,16 +641,16 @@
                 <div class="buff-group">
                     <span class="buff-group-title" data-i18n="grpJanus">Sol Janus</span>
                     <div class="checkbox-group">
-                        <label class="checkbox-item"><input type="checkbox" id="buffJanus10"
-                                onchange="toggleExclusiveBuff('Janus', 10, this)"> Lv1</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffJanus37"
-                                onchange="toggleExclusiveBuff('Janus', 37, this)"> Lv10</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffJanus46"
-                                onchange="toggleExclusiveBuff('Janus', 46, this)"> Lv15</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffJanus67"
-                                onchange="toggleExclusiveBuff('Janus', 67, this)"> Lv20</label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffJanus100"
-                                onchange="toggleExclusiveBuff('Janus', 100, this)"> Lv30</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffJanus10" data-val="10"
+                                data-group="Janus" onchange="onBuffChange(this)"> Lv1</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffJanus37" data-val="37"
+                                data-group="Janus" onchange="onBuffChange(this)"> Lv10</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffJanus46" data-val="46"
+                                data-group="Janus" onchange="onBuffChange(this)"> Lv15</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffJanus67" data-val="67"
+                                data-group="Janus" onchange="onBuffChange(this)"> Lv20</label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffJanus100" data-val="100"
+                                data-group="Janus" onchange="onBuffChange(this)"> Lv30</label>
                     </div>
                 </div>
 
@@ -619,23 +658,23 @@
                 <div class="buff-group">
                     <span class="buff-group-title" data-i18n="grpLinks">Link Skills</span>
                     <div class="checkbox-group">
-                        <label class="checkbox-item"><input type="checkbox" id="buffMerc15"
-                                onchange="toggleExclusiveBuff('Merc', 15, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffMerc15" data-val="15"
+                                data-group="Merc" onchange="onBuffChange(this)"> <span
                                 data-i18n="buffMerc15">Merc15</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffMerc20"
-                                onchange="toggleExclusiveBuff('Merc', 20, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffMerc20" data-val="20"
+                                data-group="Merc" onchange="onBuffChange(this)"> <span
                                 data-i18n="buffMerc20">Merc20</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffZero10"
-                                onchange="toggleExclusiveBuff('Zero', 10, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffZero10" data-val="10"
+                                data-group="Zero" onchange="onBuffChange(this)"> <span
                                 data-i18n="buffZero10">Zero10</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffZero12"
-                                onchange="toggleExclusiveBuff('Zero', 12, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffZero12" data-val="12"
+                                data-group="Zero" onchange="onBuffChange(this)"> <span
                                 data-i18n="buffZero12">Zero12</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffEvan30"
-                                onchange="toggleExclusiveBuff('Evan', 30, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvan30" data-val="30"
+                                data-group="Evan" onchange="onBuffChange(this)"> <span
                                 data-i18n="buffEvan30">Evan30</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffEvan34"
-                                onchange="toggleExclusiveBuff('Evan', 34, this)"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffEvan34" data-val="34"
+                                data-group="Evan" onchange="onBuffChange(this)"> <span
                                 data-i18n="buffEvan34">Evan34</span></label>
                     </div>
                 </div>
@@ -644,16 +683,16 @@
                 <div class="buff-group">
                     <span class="buff-group-title" data-i18n="grpEquip">Equip</span>
                     <div class="checkbox-group">
-                        <label class="checkbox-item"><input type="checkbox" id="buffSpirit30"
-                                onchange="toggleBuff(30, this)"> <span data-i18n="buffSpirit30">Pend(30%)</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffRingBlue"
-                                onchange="toggleBuff(15, this)" style="border-color:#3b82f6;"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffSpirit30" data-val="30"
+                                onchange="onBuffChange(this)"> <span data-i18n="buffSpirit30">Pend(30%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffRingBlue" data-val="15"
+                                onchange="onBuffChange(this)" style="border-color:#3b82f6;"> <span
                                 data-i18n="buffRingBlue">Blue(15%)</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffRingBlack"
-                                onchange="toggleBuff(15, this)" style="border-color:#111;"> <span
+                        <label class="checkbox-item"><input type="checkbox" id="buffRingBlack" data-val="15"
+                                onchange="onBuffChange(this)" style="border-color:#111;"> <span
                                 data-i18n="buffRingBlack">Black(15%)</span></label>
-                        <label class="checkbox-item"><input type="checkbox" id="buffRing3"
-                                onchange="toggleBuff(3, this)"> <span data-i18n="buffRing3">Ring(3%)</span></label>
+                        <label class="checkbox-item"><input type="checkbox" id="buffRing3" data-val="3"
+                                onchange="onBuffChange(this)"> <span data-i18n="buffRing3">Ring(3%)</span></label>
                     </div>
                 </div>
 
@@ -1018,7 +1057,7 @@
            ========================================= */
         const dictionary = {
             en: {
-                appTitle: "Shasta's Experience Planner Ver0.82",
+                appTitle: "Syasta's Experience Planner Ver0.82",
                 saveLoadTitle: "Save/Load",
                 slot1: "Slot 1",
                 slot2: "Slot 2",
@@ -1085,7 +1124,7 @@
                 buffRingBlack: "Black Ring(+15%)",
                 buffRing3: "Ring(+3%)",
 
-                lblOtherMult: "Other Multipliers",
+                lblOtherMult: "Other Specials",
                 optNone: "None",
                 optRune: "Rune (+5%)",
                 mainMapTitle: "Main Hunting Ground",
@@ -1139,11 +1178,18 @@
                 simTitle: "Optimization Route",
                 btnCalc: "Calc",
                 lblRuns: "Runs",
+                lblRuns: "Runs",
                 lblMult: "Mult",
+                lblMultiplier: "Multiplier",
+                noteTreasure: "1 Box / 30 mins",
                 btnManual: "Manual",
                 manualTitle: "Instruction Manual",
                 lblTreasureBox: "Treasure Box",
                 lblVIPBooster: "VIP Booster",
+                optVIPSpam: "VIP Booster Spam",
+                optVIPRune: "VIP Booster + Rune",
+                optVIPBless: "VIP Booster + EXP Rune",
+                optVIPHyperBless: "VIP/Hyper Booster (Bless Rune)",
                 btnBossTracker: "Boss Schedule (External)",
                 manualText: `
                     <h3>1. Character Setup</h3>
@@ -1233,13 +1279,19 @@
                 buffRingBlack: "黒指輪(+15%)",
                 buffRing3: "指輪(+3%)",
 
-                lblOtherMult: "その他倍率",
+                lblOtherMult: "その他特殊",
+                noteTreasure: "30分毎1BOX計算",
                 optNone: "なし",
                 optRune: "ルーン(+5%)",
+                optVIPSpam: "VIPブースター スパム",
+                optVIPRune: "VIPブースター + ルーン",
+                optVIPBless: "VIPブースター + 祝福ルーン",
+                optVIPHyperBless: "VIPブースター・VIPハイパーブースター 祝福ルーン適応",
                 mainMapTitle: "メインの狩場",
                 rivalMapTitle: "比較する狩場",
                 lblSelectMap: "狩場を選択",
                 lblBaseExp: "基礎経験値",
+                lblMultiplier: "倍率",
                 lblKillsHr: "1時間の討伐数",
                 btnTheory: "理論値",
                 lblBurning: "バーニング",
@@ -1292,6 +1344,9 @@
                 manualTitle: "取扱説明書",
                 lblTreasureBox: "トレジャーボックス",
                 lblVIPBooster: "VIPブースター",
+                optVIPSpam: "VIPブースター連打",
+                optVIPRune: "VIPブースター ルーン適応",
+                optVIPBless: "VIPブースター 祝福ルーン適応",
                 btnBossTracker: "ボス予定表(別ページ)",
                 manualText: `
                         <h3>1. キャラクター設定</h3>
@@ -1422,8 +1477,8 @@
             { area: "アルテリア", name: "北側外郭地域", nameEn: "Northern Outskirts", areaEn: "Arteria", lv: 280, pop: 35, exp: 3436027 },
             { area: "アルテリア", name: "西側外郭地域", nameEn: "Western Outskirts", areaEn: "Arteria", lv: 280, pop: 39, exp: 3436027 },
             { area: "アルテリア", name: "外郭戦闘地域2", nameEn: "Combat Zone Outskirts 2", areaEn: "Arteria", lv: 281, pop: 39, exp: 3482914 },
-            { area: "アルテリア", name: "南側外郭地域", nameEn: "Eastern Outskirts", areaEn: "Arteria", lv: 281, pop: 39, exp: 3482914 },
-            { area: "アルテリア", name: "東側外郭地域", nameEn: "Eastern Outskirts", areaEn: "Arteria", lv: 281, pop: 35, exp: 3482914 },
+            { area: "アルテリア", name: "南側外郭地域", nameEn: "Southern Outskirts", areaEn: "Arteria", lv: 281, pop: 35, exp: 3482914 },
+            { area: "アルテリア", name: "東側外郭地域", nameEn: "Eastern Outskirts", areaEn: "Arteria", lv: 281, pop: 39, exp: 3482914 },
             { area: "アルテリア", name: "最下層の通路1", nameEn: "Bottom Deck Passage 1", areaEn: "Arteria", lv: 282, pop: 35, exp: 3524768 },
             { area: "アルテリア", name: "最下層の通路2", nameEn: "Bottom Deck Passage 2", areaEn: "Arteria", lv: 282, pop: 39, exp: 3524768 },
             { area: "アルテリア", name: "最下層の通路3", nameEn: "Bottom Deck Passage 3", areaEn: "Arteria", lv: 282, pop: 39, exp: 3524768 },
@@ -1527,7 +1582,7 @@
 
         const epicDungeons = [
             {
-                id: "highmountain", nameEn: "High Mountain", nameJp: "ハイマウンテン",
+                id: "highmountain", nameEn: "High Mountain", nameJp: "ハイマウンテン", reqLv: 260,
                 expTable: {
                     260: 194600000000, 261: 197400000000, 262: 200200000000, 263: 203000000000, 264: 206200000000,
                     265: 232000000000, 266: 235200000000, 267: 238400000000, 268: 242000000000, 269: 245200000000,
@@ -1538,7 +1593,7 @@
                 }
             },
             {
-                id: "angler", nameEn: "Angler Company", nameJp: "アングラーカンパニー",
+                id: "angler", nameEn: "Angler Company", nameJp: "アングラーカンパニー", reqLv: 270,
                 expTable: {
                     270: 384750000000, 271: 403050000000, 272: 408150000000, 273: 430650000000, 274: 436950000000,
                     275: 491100000000, 276: 497250000000, 277: 504300000000, 278: 510450000000, 279: 517500000000,
@@ -1598,11 +1653,29 @@
             renderQuestList();
             updateRequiredExp();
             document.querySelectorAll("input, select").forEach(el => {
-                el.addEventListener("input", calculateAll);
+                if (el.id === "userBuffPercent") {
+                    el.addEventListener("input", onManualBuffChange);
+                } else {
+                    el.addEventListener("input", calculateAll);
+                }
                 el.addEventListener("change", calculateAll);
             });
             calculateAll();
             checkTerms();
+        }
+
+        // Keep track of manual base value to allow adding checkbox values on top
+        let manualBuffBase = 0;
+
+        function onManualBuffChange(e) {
+            const val = parseFloat(e.target.value) || 0;
+            // Calculate current checkbox total to derive base
+            let cbTotal = 0;
+            document.querySelectorAll('input[type="checkbox"][data-val]').forEach(el => {
+                if (el.checked) cbTotal += parseFloat(el.dataset.val) || 0;
+            });
+            manualBuffBase = val - cbTotal;
+            calculateAll();
         }
 
         function updateMapSelectors() {
@@ -1664,8 +1737,44 @@
             // That's acceptable or we can clear inputs. For now keep inputs.
         }
 
+        function loadMapData(target) {
+            const sel = document.getElementById(`mapSelect${target}`);
+            const val = sel.value;
+            // Clear inputs if empty
+            if (!val) {
+                return;
+            }
+
+            try {
+                const data = JSON.parse(val);
+                document.getElementById(`baseExp${target}`).value = data.exp;
+                document.getElementById(`mobLevel${target}`).value = data.lv;
+                document.getElementById(`popCount${target}`).value = data.pop;
+
+                // Automatically set theory kills
+                calcTheoryKills(target);
+            } catch (e) {
+                console.error("Invalid Map Data", e);
+            }
+        }
+
+        function calcTheoryKills(target) {
+            const pop = parseInt(document.getElementById(`popCount${target}`).value) || 30;
+            // JMS Respawn Logic (Approximate)
+            // Max Kills ~ Pop * 475
+            const maxKills = Math.floor(pop * 475);
+            document.getElementById(`killsPerHour${target}`).value = maxKills;
+            calculateAll();
+        }
+
         function renderQuestList() {
             const currentLv = parseInt(document.getElementById("currentLevel").value) || 260;
+
+            // Context: Save checked states before wiping HTML
+            const checkedIds = new Set();
+            document.querySelectorAll('#dailyQuestList input:checked, #weeklyQuestList input:checked, #epicDungeonList input:checked').forEach(el => {
+                checkedIds.add(el.id);
+            });
 
             // 1. Daily Quests
             const container = document.getElementById("dailyQuestList");
@@ -1690,8 +1799,11 @@
                     div.title = `Req Lv: ${q.reqLv}`;
                 }
 
+                // Restore check if not locked
+                const isChecked = !isLocked && checkedIds.has(`dailyQ_${idx}`);
+
                 div.innerHTML = `
-                    <input type="checkbox" id="dailyQ_${idx}" onchange="calculateAll()" ${isLocked ? 'disabled' : ''}>
+                    <input type="checkbox" id="dailyQ_${idx}" onchange="calculateAll()" ${isLocked ? 'disabled' : ''} ${isChecked ? 'checked' : ''}>
                     <span>${label}</span>
                 `;
                 container.appendChild(div);
@@ -1704,8 +1816,12 @@
                 const label = currentLang === 'en' ? q.nameEn : q.nameJp;
                 const div = document.createElement("label");
                 div.className = "checkbox-item";
+
+                // Weekly usually no level locks here or static. Just restore.
+                const isChecked = checkedIds.has(`weeklyQ_${idx}`);
+
                 div.innerHTML = `
-                    <input type="checkbox" id="weeklyQ_${idx}" onchange="calculateAll()">
+                    <input type="checkbox" id="weeklyQ_${idx}" onchange="calculateAll()" ${isChecked ? 'checked' : ''}>
                     <span>${label}</span>
                 `;
                 wContainer.appendChild(div);
@@ -1717,17 +1833,30 @@
             epicDungeons.forEach((q, idx) => {
                 const label = currentLang === 'en' ? q.nameEn : q.nameJp;
 
+                // Level Check
+                const isLocked = currentLv < (q.reqLv || 0);
+
                 const wrapper = document.createElement("div");
+                wrapper.style = "margin-bottom:5px; display:flex; align-items:center; flex-wrap:wrap;";
+                if (isLocked) {
+                    wrapper.style.opacity = "0.5";
+                    wrapper.title = `Req Lv: ${q.reqLv}`;
+                }
+
+                const isMainChecked = !isLocked && checkedIds.has(`epicQ_${idx}`);
+                const isB6Checked = !isLocked && checkedIds.has(`epicBonus6x_${idx}`);
+                const isB11Checked = !isLocked && checkedIds.has(`epicBonus11x_${idx}`);
+
                 wrapper.innerHTML = `
-                <div style="margin-bottom:5px;">
+                <div style="margin-right:10px;">
                     <label class="checkbox-item">
-                        <input type="checkbox" id="epicQ_${idx}" onchange="toggleEpicDungeon(${idx})">
+                        <input type="checkbox" id="epicQ_${idx}" onchange="toggleEpicDungeon(${idx})" ${isLocked ? 'disabled' : ''} ${isMainChecked ? 'checked' : ''}>
                         <span>${label}</span>
                     </label>
-                    <div id="epicOptions_${idx}" style="display:none; margin-left:20px; gap:10px; font-size:0.8rem;">
-                        <label><input type="checkbox" id="epicBonus6x_${idx}" onchange="toggleEpicBonus(${idx}, 6)"> +Bonus(6x)</label>
-                        <label><input type="checkbox" id="epicBonus11x_${idx}" onchange="toggleEpicBonus(${idx}, 11)"> +Bonus(11x)</label>
-                    </div>
+                </div>
+                <div id="epicOptions_${idx}" style="display:${isMainChecked ? 'flex' : 'none'}; gap:10px; font-size:0.8rem; align-items:center;">
+                    <label class="checkbox-item" style="margin-bottom:0;"><input type="checkbox" id="epicBonus6x_${idx}" onchange="toggleEpicBonus(${idx}, 6)" ${isB6Checked ? 'checked' : ''}> <span>+Bonus(6x)</span></label>
+                    <label class="checkbox-item" style="margin-bottom:0;"><input type="checkbox" id="epicBonus11x_${idx}" onchange="toggleEpicBonus(${idx}, 11)" ${isB11Checked ? 'checked' : ''}> <span>+Bonus(11x)</span></label>
                 </div>`;
                 eContainer.appendChild(wrapper);
             });
@@ -1794,110 +1923,86 @@
             updateMapSelectors();
         }
 
-        function loadMapData(target) {
-            const sel = document.getElementById(`mapSelect${target}`);
-            if (!sel.value) return;
-            const data = JSON.parse(sel.value);
-            document.getElementById(`mobLevel${target}`).value = data.lv;
-            document.getElementById(`baseExp${target}`).value = data.exp;
-            document.getElementById(`popCount${target}`).value = data.pop;
-            calcTheoryKills(target);
-        }
 
-        function calcTheoryKills(target) {
-            const pop = parseInt(document.getElementById(`popCount${target}`).value) || 0;
-            const theory = Math.floor(pop * 470.588);
-            document.getElementById(`killsPerHour${target}`).value = theory;
-            calculateAll();
-        }
 
-        function toggleBuff(val, checkbox) {
-            const current = parseFloat(document.getElementById("userBuffPercent").value) || 0;
-            if (checkbox.checked) {
-                document.getElementById("userBuffPercent").value = current + val;
-            } else {
-                document.getElementById("userBuffPercent").value = current - val;
-            }
-            calculateAll();
-        }
-
-        // Handles mutual exclusion for groups
-        function toggleExclusiveBuff(group, val, checkbox) {
-            if (!checkbox.checked) {
-                toggleBuff(val, checkbox); // Just subtract
-                return;
-            }
-
-            // Define groups and their possible values
-            const groups = {
-                'MVP': [50, 75],
-                'Coupon': [100, 200, 300],
-                'Potion': [10, 20],
-                'Merc': [15, 20],
-                'Zero': [10, 12],
-                'Symbol': [35, 50],
-                'Evan': [30, 34],
-                'Janus': [10, 37, 46, 67, 100],
-                'Event': [2.5, 5, 7.5, 10, 12.5, 15], // New Group
-                'Title': [10, 20]
-            };
-
-            const peers = groups[group];
-            if (peers) {
-                peers.forEach(p => {
-                    if (p !== val) {
-                        let id = "";
-                        if (group === 'Coupon') id = `buffCoupon${p}`;
-                        else if (group === 'MVP') id = `buffMVP${p}`;
-                        else if (group === 'Potion') id = `buffPotion${p}`;
-                        else if (group === 'Merc') id = `buffMerc${p}`;
-                        else if (group === 'Zero') id = `buffZero${p}`;
-                        else if (group === 'Symbol') id = `buffHS${p}`;
-                        else if (group === 'Evan') id = `buffEvan${p}`;
-                        else if (group === 'Janus') id = `buffJanus${p}`;
-                        else if (group === 'Event') {
-                            // Event IDs need special handling due to decimals in ID
-                            const safeP = p.toString().replace('.', '_');
-                            id = `buffEvent${safeP}`;
-                        }
-                        else if (group === 'Title') id = `buffTitle${p}`;
-
-                        const el = document.getElementById(id);
-                        if (el && el.checked) {
-                            el.checked = false;
-                            toggleBuff(p, el); // Subtract peer value
-                        }
-                    }
+        // --- New Buff Logic (Re-calc based) ---
+        function onBuffChange(elem) {
+            // Exclusive Group Check
+            const group = elem.dataset.group;
+            if (group && elem.checked) {
+                // Uncheck others in same group
+                document.querySelectorAll(`input[data-group="${group}"]`).forEach(el => {
+                    if (el !== elem) el.checked = false;
                 });
             }
-
-            toggleBuff(val, checkbox); // Add new value
+            calcBuffTotal();
         }
 
-        function checkHighEfficacyBuffs() {
-            // Check higher value exclusive buffs
-            const highExclusive = ['buffCoupon300', 'buffMVP75', 'buffPotion20', 'buffMerc20', 'buffZero12', 'buffHS50', 'buffEvan34', 'buffJanus100', 'buffTitle20'];
-
-            highExclusive.forEach(id => {
-                const el = document.getElementById(id);
-                if (el && !el.checked) {
-                    el.click(); // Click to trigger exclusive logic
+        function calcBuffTotal() {
+            let total = 0;
+            // Checkboxes
+            document.querySelectorAll('input[type="checkbox"][data-val]').forEach(el => {
+                if (el.checked) {
+                    total += parseFloat(el.dataset.val) || 0;
                 }
             });
 
-            // Check non-exclusive high efficacy ones
-            const highStackable = [
+            // Allow negative base? Probably fine, but total should be displayed
+            // Total = ManualBase + CheckboxTotal
+            const finalTotal = manualBuffBase + total;
+
+            // Format to max 1 decimal place if needed to avoid float errors
+            document.getElementById("userBuffPercent").value = parseFloat(finalTotal.toFixed(2));
+            calculateAll();
+        }
+
+        function checkHighEfficacyBuffs() {
+            // Uncheck all first? Or just try to set best states
+
+            // Exclusive Groups Priorities (Highest to Lowest)
+            // Exclusive Groups Priorities (Highest to Lowest)
+            const priorities = {
+                'Coupon': ['buffCoupon300'],
+                'MVP': ['buffMVP75'],
+                'Potion': ['buffPotion20'],
+                'Merc': ['buffMerc20'],
+                'Zero': ['buffZero12'],
+                'Symbol': ['buffHS50'],
+                'Evan': ['buffEvan34'],
+                'Janus': ['buffJanus100'],
+                'Title': ['buffTitle20'],
+                'Event': ['buffEvent15']
+            };
+
+            // Set Exclusive Winners
+            for (const [group, candidates] of Object.entries(priorities)) {
+                // Usually one winner
+                const winId = candidates[0];
+                const el = document.getElementById(winId);
+                if (el) {
+                    el.checked = true;
+                    // Need to uncheck others manually since we don't click() but call onBuffChange
+                    // Actually onBuffChange handles exclusivity, so just check it and call function
+                    onBuffChange(el);
+                }
+            }
+
+            // Set Non-Exclusive High Value
+            const others = [
                 'buffDice6', 'buffLegion10', 'buffArtifact12', 'buffHyper10',
                 'buffSpirit30', 'buffRingBlue', 'buffRingBlack', 'buffRing3',
                 'buffVIP', 'buffLounge', 'buffEXGold'
             ];
-
-            highStackable.forEach(id => {
+            others.forEach(id => {
                 const el = document.getElementById(id);
-                if (el && !el.checked) {
-                    el.click(); // Click to trigger onchange and toggleBuff
+                if (el) {
+                    el.checked = true;
+                    // No exclusive logic needed, but call onBuffChange to sum up
+                    // Or just call calcBuffTotal at very end
                 }
             });
+
+            calcBuffTotal();
         }
 
         function calculateAll() {
@@ -2343,6 +2448,19 @@
 
                 // 4. Weekly (Avg)
                 let weeklyAvg = 0;
+
+                // Weekly Quests (e.g. Dawn of Forest)
+                weeklyQuests.forEach((q, idx) => {
+                    const el = document.getElementById(`weeklyQ_${idx}`);
+                    if (el && el.checked) {
+                        // Use ExpTable for current sim level
+                        const val = q.expTable[lv] || (lv >= 299 ? q.expTable[299] : 0);
+                        if (val > 0) {
+                            weeklyAvg += val / 7;
+                        }
+                    }
+                });
+
                 // EX MP
                 if (doExMP && lv >= 260) {
                     const exVal = mpExtremeExpTable[lv] || (lv >= 299 ? mpExtremeExpTable[299] : 0);
