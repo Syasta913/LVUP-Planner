@@ -514,7 +514,7 @@
                             <label style="font-size:0.75rem; color:var(--accent-gold);" data-i18n="lblVIPBooster">VIP
                                 Booster</label>
                             <select id="selVIPBooster" onchange="calculateAll()"
-                                style="padding:2px; font-size:0.8rem; width:320px; height:24px;">
+                                style="padding:2px; font-size:0.8rem; width:200px; height:24px;">
                                 <option value="none" data-i18n="optNone">None</option>
                                 <option value="spam" data-i18n="optVIPSpam">Spam</option>
                                 <option value="rune" data-i18n="optVIPRune">Rune</option>
@@ -522,6 +522,28 @@
                                 <option value="hyper_bless" data-i18n="optVIPHyperBless">VIP/Hyper Booster (Bless Rune)
                                 </option>
                             </select>
+                        </div>
+
+                        <!-- Event Skill Group -->
+                        <!-- Event Skill Group -->
+                        <div
+                            style="border:1px solid #444; border-radius:4px; padding:3px 6px; display:flex; flex-direction:column; gap:2px; background:rgba(0,0,0,0.2);">
+                            <span style="font-size:0.7rem; color:#aaa;">イベント発動スキル</span>
+                            <div style="display:flex; gap:5px; align-items:flex-end;">
+                                <div style="display:flex; flex-direction:column; align-items:center; gap:0;">
+                                    <span style="font-size:0.6rem; color:#aaa; margin-bottom:1px;">１回あたりの経験値量(憶)</span>
+                                    <input type="number" id="vipExpAmt" placeholder="Exp"
+                                        style="padding:2px; font-size:0.8rem; width:110px; height:24px; text-align:center;"
+                                        onchange="calculateAll()">
+                                </div>
+                                <span style="font-size:0.9rem; color:#888; padding-bottom:3px;">×</span>
+                                <div style="display:flex; flex-direction:column; align-items:center; gap:0;">
+                                    <span style="font-size:0.6rem; color:#aaa; margin-bottom:1px;">回数</span>
+                                    <input type="number" id="vipCount" placeholder="Count" value="1" min="1"
+                                        style="padding:2px; font-size:0.8rem; width:50px; height:24px; text-align:center;"
+                                        onchange="calculateAll()">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -806,6 +828,11 @@
                                     data-i18n="btnCheckOver260">&ge; 260</button>
                                 <button onclick="bulkCheckDaily('clear')" style="font-size:0.7rem; padding:2px 5px;"
                                     data-i18n="btnClear">Clear</button>
+
+                                <span style="margin-left:15px; font-size:0.9rem;" data-i18n="lblKillMult">Kill Quest
+                                    Exp Mult:</span>
+                                <input type="number" id="killQuestMult" value="1.0" step="0.1" min="0"
+                                    onchange="calculateAll()" style="width:50px; text-align:center; margin-left:5px;">
                             </div>
                             <div class="checkbox-group" id="dailyQuestList">
                                 <!-- Populated by JS -->
@@ -972,6 +999,10 @@
                             <span data-i18n="lblBreakWeekly">Weekly (Avg):</span>
                             <span id="breakWeeklyMain">0</span>
                         </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span data-i18n="lblBreakOther">Others (Special):</span>
+                            <span id="breakOtherMain">0</span>
+                        </div>
                     </div>
 
                     <p style="text-align:left;"><span data-i18n="resExpHr">Total Daily Exp</span>: <br><span
@@ -1000,6 +1031,10 @@
                         <div style="display:flex; justify-content:space-between;">
                             <span data-i18n="lblBreakWeekly">Weekly (Avg):</span>
                             <span id="breakWeeklyRival">0</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span data-i18n="lblBreakOther">Others (Special):</span>
+                            <span id="breakOtherRival">0</span>
                         </div>
                     </div>
 
@@ -1169,6 +1204,8 @@
                 lblBreakHunt: "Hunting (1h):",
                 lblBreakDaily: "Daily Q:",
                 lblBreakWeekly: "Weekly (Avg):",
+                lblBreakOther: "Others (Special):",
+                lblKillMult: "Kill Quest Exp Mult",
 
                 lblMonsterPark: "Monster Park",
                 optNone: "None",
@@ -1177,7 +1214,6 @@
                 lblTargetLevel: "Target Level",
                 simTitle: "Optimization Route",
                 btnCalc: "Calc",
-                lblRuns: "Runs",
                 lblRuns: "Runs",
                 lblMult: "Mult",
                 lblMultiplier: "Multiplier",
@@ -1330,8 +1366,12 @@
                 lblBreakHunt: "狩り(1時間):",
                 lblBreakDaily: "デイリー:",
                 lblBreakWeekly: "ウィークリー(1日平均値):",
+                lblBreakOther: "その他特殊経験値:",
+                lblKillMult: "討伐クエスト経験値倍率",
 
                 lblMonsterPark: "モンスターパーク(デイリー)",
+
+
                 lblExMonsterPark: "エクストリーム モンスターパーク(週課)",
                 lblTargetLevel: "目標レベル",
                 simTitle: "最適化ルートシミュレーション",
@@ -2020,10 +2060,11 @@
             let weeklyTotal = 0;
 
             // Daily Quests
+            const killMult = parseFloat(document.getElementById("killQuestMult").value) || 1.0;
             dailyQuests.forEach((q, idx) => {
                 const el = document.getElementById(`dailyQ_${idx}`);
                 if (el && el.checked) {
-                    dailyTotal += q.exp;
+                    dailyTotal += (q.exp * killMult);
                 }
             });
 
@@ -2152,11 +2193,19 @@
 
             const dailyGrindExp = expPerHour * dailyTime;
 
-            const totalDailyExp = dailyGrindExp + questData.daily + questData.weeklyAvg;
-
             document.getElementById(`breakHunt${target}`).textContent = Math.floor(expPerHour).toLocaleString();
             document.getElementById(`breakDaily${target}`).textContent = questData.daily.toLocaleString();
             document.getElementById(`breakWeekly${target}`).textContent = questData.weeklyAvg.toLocaleString();
+
+            // Event Skill EXP Logic
+            // 100 million = 100,000,000
+            const vipExpAmt = parseFloat(document.getElementById("vipExpAmt").value) || 0;
+            const vipCount = parseFloat(document.getElementById("vipCount").value) || 0;
+            const eventSkillExp = vipExpAmt * 100000000 * vipCount;
+
+            document.getElementById(`breakOther${target}`).textContent = eventSkillExp.toLocaleString();
+
+            const totalDailyExp = dailyGrindExp + questData.daily + questData.weeklyAvg + eventSkillExp;
 
             document.getElementById(`resExpHr${target}`).textContent = Math.floor(totalDailyExp).toLocaleString();
             document.getElementById(`resExpHr${target}`).dataset.value = totalDailyExp;
@@ -2439,9 +2488,10 @@
                 // 3. All Daily Quests (All available)
                 let questExpDaily = 0;
                 let questCount = 0;
+                const killMultSim = parseFloat(document.getElementById("killQuestMult").value) || 1.0;
                 dailyQuests.forEach(q => {
                     if (q.reqLv <= lv) {
-                        questExpDaily += q.exp;
+                        questExpDaily += (q.exp * killMultSim);
                         questCount++;
                     }
                 });
@@ -2478,7 +2528,14 @@
                     }
                 });
 
-                const totalDaily = huntExpDaily + mpExpDaily + questExpDaily + weeklyAvg;
+
+
+                // Other Special EXP (Event Skill)
+                const vipExpAmtSim = parseFloat(document.getElementById("vipExpAmt").value) || 0;
+                const vipCountSim = parseFloat(document.getElementById("vipCount").value) || 0;
+                const eventSkillExpSim = vipExpAmtSim * 100000000 * vipCountSim;
+
+                const totalDaily = huntExpDaily + mpExpDaily + questExpDaily + weeklyAvg + eventSkillExpSim;
 
                 // Req Exp
                 const req = expTableJMS[lv];
